@@ -1,0 +1,11 @@
+data/raw/
+data/derived/
+*.duckdb
+_targets/
+stan/power
+stan/*.exe
+.Rhistory
+.RData
+.Rproj.user/
+.Renviron
+pilot/out/*.log
