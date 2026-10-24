@@ -1,14 +1,42 @@
 # ==============================================================================
 # Resume: Wins Above Bubble (WAB), per posterior draw.
 #
-# In draw s the benchmark is the team ranked `bubble` by rating. Each D1 game adds
+# In draw s the benchmark is the last team in: the automatic bids (auto_bids()) leave the power
+# ranking and the benchmark is the n_at_large-th best remaining team by rating. Each D1 game adds
 # W - P(benchmark wins that game at that venue). Summing gives WAB; ranking every draw gives
 # rank intervals and P(at-large) (rank among teams without an automatic bid <= n_at_large).
 # ==============================================================================
 
-wab_draws <- function(fit, inp, games = inp$games, bubble = 45) {
+# Automatic bids per draw (draws x teams, logical), one per conference. A conference whose
+# tournament final was played before the snapshot gets its champion; otherwise its standings
+# leader (best conference win share, ties to the higher rating in that draw; before conference
+# play that is the best-rated team). Until the conference-tournament simulation, that is the
+# in-season stand-in. champs: data.frame(team_id, game_date) or NULL.
+auto_bids <- function(r, inp, champs = NULL) {
+  teams <- inp$teams
+  g <- inp$games
+  cg <- g[!is.na(g$home_conf) & g$home_conf == g$away_conf & !(g$game_type %in% "TRNMNT") & g$season_type %in% "regular", ]
+  w <- table(factor(c(cg$home_id[cg$home_score > cg$away_score], cg$away_id[cg$away_score > cg$home_score]), teams$team_id))
+  n <- table(factor(c(cg$home_id, cg$away_id), teams$team_id))
+  pct <- ifelse(n > 0, w / pmax(n, 1), 0.5)
+  done <- if (is.null(champs)) integer() else champs$team_id[champs$game_date < inp$snap_date]
+  auto <- matrix(FALSE, nrow(r), ncol(r))
+  for (cf in setdiff(unique(teams$conf), c(NA, "Indep.", "Independent"))) {
+    k <- which(teams$conf == cf)
+    ch <- intersect(teams$team_id[k], done)
+    if (length(ch)) { auto[, match(ch[1], teams$team_id)] <- TRUE; next }
+    lead <- k[pct[k] == max(pct[k])]
+    pick <- if (length(lead) == 1) rep(lead, nrow(r)) else lead[max.col(r[, lead, drop = FALSE], ties.method = "first")]
+    auto[cbind(seq_len(nrow(r)), pick)] <- TRUE
+  }
+  auto
+}
+
+wab_draws <- function(fit, inp, games = inp$games, field = 68L, champs = NULL) {
   r <- fit$r
-  rb <- apply(r, 1, \(x) sort(x, decreasing = TRUE)[bubble])
+  auto <- auto_bids(r, inp, champs)
+  n_at_large <- field - sum(auto[1, ])
+  rb <- vapply(seq_len(nrow(r)), \(d) sort(r[d, !auto[d, ]], decreasing = TRUE)[n_at_large], numeric(1))
   long <- rbind(
     data.frame(team_id = games$home_id, opp_id = games$away_id, venue = 1 - games$neutral,
                win = as.integer(games$home_score > games$away_score), w = games$poss_reg / 70),
@@ -29,6 +57,9 @@ wab_draws <- function(fit, inp, games = inp$games, bubble = 45) {
   attr(wab, "bench_losses") <- as.vector(Matrix::colSums(M * (1 - colMeans(p_bench))))
   attr(wab, "wins") <- as.vector(Matrix::colSums(M * long$win))
   attr(wab, "games") <- as.vector(Matrix::colSums(M))
+  # the benchmark's power rank in each draw, and the automatic bids
+  attr(wab, "bench_rank") <- rowSums(r > rb) + 1
+  attr(wab, "p_auto") <- colMeans(auto)
   wab
 }
 
@@ -40,7 +71,8 @@ summarise_resume <- function(wab, inp) {
   data.frame(team_id = inp$teams$team_id, wins = attr(wab, "wins"), losses = n - attr(wab, "wins"),
              wab = colMeans(wab), wab_lo = apply(wab, 2, stats::quantile, 0.1), wab_hi = apply(wab, 2, stats::quantile, 0.9),
              wab_rank = colMeans(rk), wab_rank_lo = apply(rk, 2, stats::quantile, 0.1), wab_rank_hi = apply(rk, 2, stats::quantile, 0.9),
-             p_pos = colMeans(wab > 0), sos = ifelse(n > 0, attr(wab, "bench_losses") / n, NA_real_))
+             p_pos = colMeans(wab > 0), sos = ifelse(n > 0, attr(wab, "bench_losses") / n, NA_real_),
+             p_auto = attr(wab, "p_auto"))
 }
 
 summarise_wab <- function(wab, inp, auto_bids = integer(), n_at_large = 37) {

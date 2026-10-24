@@ -7,9 +7,12 @@
 #     -> games_<s>                games with both signals (lux100, eff100)
 #     -> prior_<s>                preseason prior: our final ratings of s-1 blended with Torvik's
 #     -> dates_<s>                snapshot dates (opening night, Mondays, the day after the final)
+#     -> champs_<s>               conference tournament champions (champions_db), for the automatic bids
 #     -> inputs_<s> [per date]    Stan inputs
 #     -> snaps_<s>  [per date]    ratings, resume, predictions, parameters, gates
-#   -> snapshots -> backtest, coverage
+#     -> polls_<s>                AP and Coaches polls matched to the snapshot dates (polls_db)
+#     -> torvik_<s>               Torvik's ratings the day before each snapshot (time machine), for the backtest
+#   -> snapshots -> backtest (vs the closing line and Torvik), coverage
 #
 # Seasons: PRIOR_SEASON (CBB_FIRST_SEASON - 1) is fit once, at its end, for the carry-over;
 # CBB_FIRST_SEASON (default 2015) through CBB_LAST_SEASON (default the current season) get every
@@ -58,9 +61,12 @@ season_targets <- function(s) {
     tar_target_raw(paste0("prior_", s), bquote(build_prior(.(prev), .(sym("data", s))$torvik_pre, .(sym("teams", s)), cfg, torvik_names))),
     tar_target_raw(paste0("dates_", s), bquote(limit_snaps(
       snapshot_dates(.(sym("games", s)), .(s), cfg = cfg, final_only = .(first)), .(MAX_SNAPS)))),
+    tar_target_raw(paste0("champs_", s), bquote(champions_db[champions_db$season == .(s), c("conf", "game_date", "team_id")])),
     tar_target_raw(paste0("inputs_", s),
-      bquote(snapshot_input(.(sym("games", s)), .(sym("dates", s)), .(sym("teams", s)), .(sym("prior", s)), cfg)),
+      bquote(snapshot_input(.(sym("games", s)), .(sym("dates", s)), .(sym("teams", s)), .(sym("prior", s)), cfg, .(sym("champs", s)))),
       pattern = bquote(map(.(sym("dates", s)))), iteration = "list"),
+    if (!first) tar_target_raw(paste0("torvik_", s), bquote(torvik_snapshots(.(sym("dates", s)), .(sym("teams", s)), .(s), torvik_names))),
+    tar_target_raw(paste0("polls_", s), bquote(match_polls(polls_db[polls_db$season == .(s), ], .(sym("dates", s))))),
     tar_target_raw(paste0("snaps_", s),
       bquote(run_snapshot(.(sym("inputs", s)), season = .(s), kind = .(sym("inputs", s))$kind, cfg = cfg)),
       pattern = bquote(map(.(sym("inputs", s)))), iteration = "list")
@@ -78,11 +84,17 @@ list(
   # Refreshes live seasons each run (final seasons make no requests); returns a data fingerprint
   # so downstream targets rerun only when a season's data changed
   tar_target(sync, sync_all(SEASONS, db_path = DB_PATH), cue = tar_cue(mode = "always")),
+  # The polls and champions tables are outside the sync fingerprint (a new poll should not refit
+  # anything), so they are reread every run; polls_<s> and champs_<s> rerun only when they changed
+  tar_target(polls_db, { sync; read_polls(SEASONS, db_path = DB_PATH) }, cue = tar_cue(mode = "always")),
+  tar_target(champions_db, { sync; read_champions(SEASONS, db_path = DB_PATH) }, cue = tar_cue(mode = "always")),
 
   lapply(SEASONS, season_targets),
 
-  tar_target_raw("snapshots", as.call(c(quote(combine_snapshots), lapply(SEASONS, \(s) sym("snaps", s))))),
-  tar_target(backtest, run_backtest(snapshots$predictions[snapshots$predictions$season >= FIRST_SEASON, ])),
+  tar_target_raw("snapshots", as.call(c(quote(combine_snapshots), lapply(SEASONS, \(s) sym("snaps", s)),
+    list(polls = as.call(c(quote(dplyr::bind_rows), lapply(SEASONS, \(s) sym("polls", s)))))))),
+  tar_target_raw("backtest", bquote(run_backtest(snapshots$predictions[snapshots$predictions$season >= FIRST_SEASON, ],
+    .(as.call(c(quote(dplyr::bind_rows), lapply(setdiff(SEASONS, PRIOR_SEASON), \(s) sym("torvik", s)))))))),
   tar_target_raw("coverage", bquote(coverage_report(
     .(as.call(c(quote(list), setNames(lapply(SEASONS, \(s) sym("games", s)), SEASONS)))),
     .(as.call(c(quote(list), setNames(lapply(SEASONS, \(s) sym("prior", s)), SEASONS)))),

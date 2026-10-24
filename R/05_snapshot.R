@@ -42,8 +42,10 @@ run_snapshot <- function(inp, season, kind = "weekly", cfg = model_config()) {
   fit <- fit_snapshot(inp, cfg)
   tag <- function(df) if (is.null(df) || !nrow(df)) NULL else data.frame(season = as.integer(season), snap_date = inp$snap_date, kind = kind, df)
   ratings <- summarise_ratings(fit, inp)
+  bench_rank <- NA_real_
   resume <- if (nrow(inp$games)) {
-    w <- wab_draws(fit, inp, bubble = bubble_rank(season, cfg))
+    w <- wab_draws(fit, inp, field = field_size(season, cfg), champs = inp$champs)
+    bench_rank <- mean(attr(w, "bench_rank"))
     dplyr::left_join(ratings[, c("team_id", "team", "conf")], summarise_resume(w, inp), by = "team_id")
   }
   preds <- if (nrow(inp$upcoming)) {
@@ -54,18 +56,31 @@ run_snapshot <- function(inp, season, kind = "weekly", cfg = model_config()) {
   }
   list(
     ratings = tag(ratings), resume = tag(resume), predictions = tag(preds),
-    params = tag(data.frame(t(colMeans(fit$par)), n_games = nrow(inp$games), n_nd = inp$stan$N_nd, secs = fit$secs)),
+    params = tag(data.frame(t(colMeans(fit$par)), bench_rank = bench_rank, n_games = nrow(inp$games), n_nd = inp$stan$N_nd, secs = fit$secs)),
     gates = tag(data.frame(t(fit$gates), worst = fit$worst$variable[1],
                            pass = fit$gates[["max_rhat"]] <= 1.01 && fit$gates[["min_ess"]] >= 400 &&
                                   fit$gates[["divergences"]] == 0 && fit$gates[["min_ebfmi"]] > 0.2))
   )
 }
 
-combine_snapshots <- function(...) {
+combine_snapshots <- function(..., polls = NULL) {
   snaps <- unlist(list(...), recursive = FALSE)
   pick <- function(nm) dplyr::bind_rows(lapply(snaps, `[[`, nm))
   list(ratings = pick("ratings"), resume = pick("resume"), predictions = pick("predictions"),
-       params = pick("params"), gates = pick("gates"))
+       params = pick("params"), gates = pick("gates"), polls = polls)
+}
+
+# Each poll release goes to the snapshot on or just before its date (preseason polls, released
+# before opening night, to the first snapshot); when several releases of one poll land on a
+# snapshot, the latest is kept
+match_polls <- function(polls, dates) {
+  if (is.null(polls) || !nrow(polls)) return(NULL)
+  snaps <- sort(dates$snap_date)
+  i <- findInterval(as.numeric(polls$poll_date), as.numeric(snaps))
+  polls$snap_date <- snaps[pmax(i, 1L)]
+  latest <- stats::ave(as.numeric(polls$poll_date), polls$snap_date, polls$poll, FUN = max)
+  out <- polls[as.numeric(polls$poll_date) == latest, ]
+  out[, c("season", "snap_date", setdiff(names(out), c("season", "snap_date")))]
 }
 
 # Next season's carry-over: the season's last snapshot
@@ -74,13 +89,52 @@ season_final_prior <- function(snaps) {
   data.frame(team_id = r$team_id, prev_dev = r$rating, prev_sd = r$sd)
 }
 
-# Every prediction of a completed game, scored against the result and the closing line
-run_backtest <- function(predictions) {
+# Torvik's ratings at each snapshot: the time-machine file for the day before (so he has the
+# same games the snapshot has), Torvik names -> ESPN ids. lg_o / lg_t: D1 averages in that file.
+torvik_snapshots <- function(dates, teams, season, overrides = "data/torvik_names.csv") {
+  dplyr::bind_rows(lapply(dates$snap_date, function(d) {
+    f <- fetch_torvik_tm(d - 1)
+    if (is.na(f)) return(NULL)
+    tv <- read_torvik_tm(f)
+    lg_o <- mean(tv$adj_o); lg_t <- mean(tv$adj_t)
+    tv <- torvik_team_ids(tv, teams, overrides)
+    data.frame(season = as.integer(season), snap_date = d, team_id = tv$team_id, adj_o = tv$adj_o, adj_d = tv$adj_d,
+               adj_t = tv$adj_t, lg_o = lg_o, lg_t = lg_t)
+  }))
+}
+
+# Torvik's neutral-court margin (home perspective, points): tempo = t_h t_a / avg, each side's
+# points per 100 = own offence x opponent defence / avg
+torvik_margin <- function(p, tv) {
+  k <- function(id) match(paste(p$season, p$snap_date, id), paste(tv$season, tv$snap_date, tv$team_id))
+  h <- tv[k(p$home_id), ]; a <- tv[k(p$away_id), ]
+  (h$adj_o * a$adj_d - a$adj_o * h$adj_d) / h$lg_o * (h$adj_t * a$adj_t / h$lg_t) / 100
+}
+
+# Every prediction of a completed game, scored against the result and the closing line, and
+# against Torvik's ratings at the same snapshot. Torvik's home court and margin sd come from
+# earlier seasons only (none for the first season, which is left out of the comparison).
+run_backtest <- function(predictions, torvik = NULL) {
   p <- predictions[predictions$played %in% TRUE, ]
   p$actual <- p$home_score - p$away_score
   p$line <- -p$spread
   p$home_win <- as.integer(p$actual > 0)
   p$period <- ifelse(as.integer(format(p$game_date, "%m")) %in% c(11, 12), "Nov-Dec", "Jan-Apr")
+  p$pred_torvik <- p$p_torvik <- NA_real_
+  if (!is.null(torvik) && nrow(torvik)) {
+    raw <- torvik_margin(p, torvik)
+    home <- 1 - p$neutral
+    for (s in sort(unique(p$season))) {
+      past <- p$season < s & !is.na(raw)
+      if (!any(past)) next
+      hca <- mean((p$actual - raw)[past & home == 1])
+      sd_m <- stats::sd((p$actual - raw - hca * home)[past])
+      now <- p$season == s
+      p$pred_torvik[now] <- raw[now] + hca * home[now]
+      p$p_torvik[now] <- stats::pnorm(p$pred_torvik[now] / sd_m)
+    }
+  }
+  ll <- function(p_, y) -mean(y * log(p_) + (1 - y) * log(1 - p_))
   score <- function(d) d |> dplyr::summarise(
     games = dplyr::n(), with_line = sum(!is.na(line)),
     mae = mean(abs(actual - pred_margin)), rmse = sqrt(mean((actual - pred_margin)^2)),
@@ -88,12 +142,24 @@ run_backtest <- function(predictions) {
     mae_on_lined = mean(abs(actual - pred_margin)[!is.na(line)]),
     ats = mean((sign(actual - line) == sign(pred_margin - line))[!is.na(line) & actual != line & pred_margin != line]),
     brier = mean((p_home - home_win)^2),
-    logloss = -mean(home_win * log(p_home) + (1 - home_win) * log(1 - p_home)),
+    logloss = ll(p_home, home_win),
+    .groups = "drop")
+  # Head to head on the games all three predicted (model, Torvik, closing line)
+  vs <- function(d) d |> dplyr::filter(!is.na(pred_torvik), !is.na(line)) |> dplyr::summarise(
+    games = dplyr::n(),
+    mae = mean(abs(actual - pred_margin)), mae_torvik = mean(abs(actual - pred_torvik)), mae_line = mean(abs(actual - line)),
+    rmse = sqrt(mean((actual - pred_margin)^2)), rmse_torvik = sqrt(mean((actual - pred_torvik)^2)),
+    rmse_line = sqrt(mean((actual - line)^2)),
+    logloss = ll(p_home, home_win), logloss_torvik = ll(p_torvik, home_win),
+    closer_than_torvik = mean((abs(actual - pred_margin) < abs(actual - pred_torvik))[pred_margin != pred_torvik]),
     .groups = "drop")
   list(games = p,
        overall = score(p),
        by_season = score(dplyr::group_by(p, season)),
-       by_period = score(dplyr::group_by(p, season, period)))
+       by_period = score(dplyr::group_by(p, season, period)),
+       vs_overall = vs(p),
+       vs_period = vs(dplyr::group_by(p, period)),
+       vs_season = vs(dplyr::group_by(p, season)))
 }
 
 # Development: keep opening night plus the last n - 1 dates (n = 0 keeps all)
@@ -104,11 +170,13 @@ limit_snaps <- function(dates, n) {
   d
 }
 
-# One branch's Stan input (dates is a one-row slice of snapshot_dates())
-snapshot_input <- function(games, dates, teams, prior, cfg = model_config()) {
+# One branch's Stan input (dates is a one-row slice of snapshot_dates()); champs = the season's
+# conference champions (champions table), for the resume benchmark's automatic bids
+snapshot_input <- function(games, dates, teams, prior, cfg = model_config(), champs = NULL) {
   inp <- prepare_input(games, dates$snap_date, teams, prior, cfg,
                        next_date = if (is.na(dates$next_date)) NULL else dates$next_date)
   inp$kind <- dates$kind
+  inp$champs <- champs
   inp
 }
 

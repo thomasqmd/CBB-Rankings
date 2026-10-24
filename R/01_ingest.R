@@ -123,6 +123,26 @@ fetch_torvik <- function(season, opening_night, today = Sys.Date()) {
   c(preseason = if (file.exists(pre)) pre else NA_character_, team_results = if (file.exists(res)) res else NA_character_)
 }
 
+# Torvik's ratings as they stood after day `date` (a time-machine file dated D includes games played
+# on D; records count non-D1 games). Walks back up to 3 days if a file is missing. Final dates
+# never change, so a cached file is never refetched.
+fetch_torvik_tm <- function(date) {
+  dir.create(raw_path("torvik", "tm"), recursive = TRUE, showWarnings = FALSE)
+  for (k in 0:3) {
+    d <- format(as.Date(date) - k, "%Y%m%d")
+    dest <- raw_path("torvik", "tm", sprintf("tm_%s.json.gz", d))
+    if (file.exists(dest)) return(dest)
+    Sys.sleep(0.5)
+    if (torvik_get(sprintf("https://barttorvik.com/timemachine/team_results/%s_team_results.json.gz", d), dest)) return(dest)
+  }
+  NA_character_
+}
+
+read_torvik_tm <- function(f) {
+  x <- jsonlite::fromJSON(gzcon(file(f, "rb")))
+  data.frame(team = x[, 2], record = x[, 4], adj_o = as.numeric(x[, 5]), adj_d = as.numeric(x[, 7]), adj_t = as.numeric(x[, 45]))
+}
+
 # Torvik's time-machine files have no header; columns follow team_results.csv (team 2, conf 3,
 # adjoe 5, adjde 7). The csv is used before opening night, when every record is 0-0.
 read_torvik_preseason <- function(files) {
@@ -194,4 +214,85 @@ torvik_team_ids <- function(torvik, teams, overrides = "data/torvik_names.csv") 
   manual <- ov$espn_team_id[match(torvik$team, ov$torvik)]
   torvik$team_id <- dplyr::coalesce(as.integer(manual), id)
   torvik[!is.na(torvik$team_id) & torvik$team_id %in% teams$team_id, ]
+}
+
+# ---- Polls ------------------------------------------------------------------------
+
+# CBBD rankings (AP Top 25, Coaches Poll; one call returns the whole season). Final seasons:
+# fetched once. Live season: refetched once the cached copy is older than MIN_REFRESH_HOURS.
+fetch_cbbd_rankings <- function(season, today = Sys.Date()) {
+  dir.create(raw_path("cbbd"), recursive = TRUE, showWarnings = FALSE)
+  dest <- raw_path("cbbd", sprintf("rankings_%d.json", season))
+  if (!file.exists(dest) || (!season_final(season, today) && stale(dest))) writeLines(cbbd_get("rankings", list(season = season)), dest)
+  dest
+}
+
+# CBBD team ids -> ESPN team ids, from the games both sources share (home with home, away with
+# away; the rare swapped neutral-site game is outvoted)
+cbbd_team_ids <- function(season, games) {
+  g <- read_cbbd(season, "games")
+  if (!length(g)) return(data.frame(cbbd_team_id = integer(), team_id = integer()))
+  int <- function(f) vapply(g, \(x) as.integer(f(x) %||% NA_integer_), integer(1))
+  cb <- data.frame(game_id = int(\(x) x$sourceId), cb_home = int(\(x) x$homeTeamId), cb_away = int(\(x) x$awayTeamId))
+  m <- merge(cb, games[, c("game_id", "home_id", "away_id")], by = "game_id")
+  pairs <- rbind(data.frame(cbbd_team_id = m$cb_home, team_id = m$home_id),
+                 data.frame(cbbd_team_id = m$cb_away, team_id = m$away_id))
+  n <- dplyr::count(stats::na.omit(pairs), cbbd_team_id, team_id)
+  n <- n[order(n$cbbd_team_id, -n$n), ]
+  n[!duplicated(n$cbbd_team_id), c("cbbd_team_id", "team_id")]
+}
+
+# One row per (poll, release, team). rank is NA for teams only receiving votes. CBBD has no
+# release date for most polls before 2016-17; those are filled from the week: week 1 is the
+# preseason poll (the day before opening night), week k >= 2 the Monday k - 2 weeks after the
+# first Monday after opening night (exact for every dated release since 2016-17), postseason
+# the day after the last game. `ids` is cbbd_team_ids() output.
+cbbd_polls <- function(season, games, ids) {
+  f <- raw_path("cbbd", sprintf("rankings_%d.json", season))
+  x <- if (file.exists(f)) jsonlite::fromJSON(f) else list()
+  if (!length(x) || !NROW(x)) {
+    return(data.frame(poll = character(), poll_date = as.Date(character()), week = integer(), season_type = character(),
+                      team_id = integer(), team = character(), rank = integer(), points = integer(), first_place = integer()))
+  }
+  opening <- min(games$game_date[games$season_type == "regular"])
+  monday1 <- opening + 1:7
+  monday1 <- monday1[format(monday1, "%u") == "1"]
+  week_date <- ifelse(x$seasonType == "postseason", max(games$game_date) + 1,
+                      ifelse(x$week <= 1, opening - 1, monday1 + 7 * (x$week - 2)))
+  data.frame(
+    poll = ifelse(grepl("^AP", x$pollType), "AP", ifelse(grepl("^Coaches", x$pollType), "Coaches", x$pollType)),
+    poll_date = dplyr::coalesce(as.Date(substr(x$pollDate, 1, 10)), as.Date(week_date)),
+    week = as.integer(x$week), season_type = x$seasonType,
+    team_id = ids$team_id[match(x$teamId, ids$cbbd_team_id)], team = x$team,
+    rank = as.integer(x$ranking), points = as.integer(x$points), first_place = as.integer(x$firstPlaceVotes)
+  )
+}
+
+# ---- Conference champions -----------------------------------------------------------
+
+# Conference tournament champions: the winner of each conference's tournament final (CBBD game
+# notes "... - Final" / "... Championship"). A conference with no final on record (Ivy before
+# 2016-17, the tournaments cancelled in 2020) has no row; its automatic bid falls back to the
+# standings leader (wab_draws()). games: the season's games table (game_id, home_id, away_id).
+cbbd_champions <- function(season, games) {
+  g <- read_cbbd(season, "games")
+  empty <- data.frame(conf = character(), game_date = as.Date(character()), team_id = integer(), notes = character())
+  if (!length(g)) return(empty)
+  chr <- function(f) vapply(g, \(x) as.character(f(x) %||% NA_character_), character(1))
+  x <- data.frame(game_id = vapply(g, \(x) as.integer(x$sourceId %||% NA_integer_), integer(1)),
+                  notes = chr(\(x) x$gameNotes), type = chr(\(x) x$gameType), st = chr(\(x) x$seasonType),
+                  hc = chr(\(x) x$homeConference), ac = chr(\(x) x$awayConference),
+                  conf_game = vapply(g, \(x) isTRUE(x$conferenceGame), logical(1)),
+                  home_won = vapply(g, \(x) isTRUE(x$homeWinner), logical(1)),
+                  played = vapply(g, \(x) !is.null(x$homeWinner) && !is.null(x$homePoints), logical(1)),
+                  game_date = as.Date(substr(chr(\(x) x$startDate), 1, 10)))
+  n <- tolower(x$notes)
+  final <- grepl("(championship|final|title)( game)?$", n) & !grepl("semi|quarter|consolation|third|3rd", n)
+  x <- x[x$type %in% "TRNMNT" & x$st %in% "regular" & (x$conf_game | x$hc %in% x$ac) & final %in% TRUE & x$played, ]
+  if (!nrow(x)) return(empty)
+  m <- merge(x, games[, c("game_id", "home_id", "away_id")], by = "game_id")
+  out <- data.frame(conf = dplyr::coalesce(m$hc, m$ac), game_date = m$game_date,
+                    team_id = ifelse(m$home_won, m$home_id, m$away_id), notes = m$notes)
+  out <- out[order(out$conf, out$game_date, decreasing = TRUE), ]
+  out[!duplicated(out$conf), ]
 }

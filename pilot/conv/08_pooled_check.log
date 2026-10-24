@@ -1,0 +1,1095 @@
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 3 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 
+Chain 3 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 1 Exception: normal_lpdf: Scale parameter[1] is 0, but must be positive! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 1 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 2 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: normal_lpdf: Location parameter[1] is inf, but must be finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 151, column 6 to column 86)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 3 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 3 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 3 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 3 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 3 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 152, column 6 to column 99)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+Chain 4 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 4 Exception: student_t_lpdf: Scale parameter[1] is inf, but must be positive finite! (in '/var/folders/k3/k8hfzfxd11j6vy0_t2rx27yw0000gn/T/RtmpOytsCT/model-12d445b024fa6.stan', line 154, column 4 to line 155, column 118)
+Chain 4 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 4 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+Chain 4 
+        snap max_rhat min_ess divergences min_ebfmi      worst secs sigma_conf
+1 2025-11-10     1.01    3558           0     0.846     b_prev    8       1.54
+2 2025-11-24     1.01    4159           0     0.921 sigma_team   17       1.49
+3 2025-12-08     1.00    2586           0     0.913 sigma_team   28       1.47
+4 2026-01-05     1.00    2615           0     0.941        tau   46       1.47
+5 2026-01-19     1.01    1765           0     0.946     b_prev   59       1.49
+6 2026-02-16     1.01     892           0     0.936        tau   87       1.48
+  sigma_team   tau   n   mae mae_old    ll ll_old
+1       4.18 0.560 301  8.85    8.93 0.409  0.415
+2       4.32 0.561 334 10.03    9.89 0.503  0.496
+3       4.79 0.569 191  9.25    9.27 0.477  0.476
+4       4.75 0.541 342  8.89    8.89 0.580  0.580
+5       4.73 0.534 339  8.66    8.67 0.555  0.556
+6       4.72 0.573 348  8.53    8.53 0.577  0.577
+weighted MAE new 9.014652 old 9.00747 | log loss new 0.5226688 old 0.5226098 

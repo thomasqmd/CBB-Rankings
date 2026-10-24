@@ -6,9 +6,11 @@ model fits (`prior_*` from 2014-15 on, `inputs_*`, `snaps_*`) have not been run.
 
 ## Next
 
-- [ ] Full build: `Rscript -e 'targets::tar_make()'` (no CBBD calls needed now; ~1.5–2 h of fits), then `Rscript check_build.R`
+- [x] Full build 2026-10-24: 571 targets, 3 h 43 m, no errors. Still to run: `Rscript check_build.R`
 - [x] Data coverage 2014–2027: efficiency signal 87–100% of D1 games, closing lines 71–73% before 2018-19 and 93–100% after, Torvik preseason matched for every team 2015–2027 (15 overrides added)
-- [ ] Pooled priors (Phase 3, first item), then refit
+- [x] Pooled priors (2026-10-24): vague-prior refits of each final snapshot 2015–2026, random-effects pooling → sigma_conf N(1.48, 0.2), sigma_team N(4.27, 0.35), tau N(0.56, 0.1) (`pilot/out/09_pooled_priors.md`). Rebuilt 2026-10-24 with these and the moving WAB benchmark (1 h 34 m, half the old fit time): 274 / 277 snapshots pass the gates (was 272; the 3 misses are `tau` at R-hat ≤ 1.0125), backtest MAE 8.87 (was 8.88), log loss 0.5259 (was 0.5271). Benchmark on Selection Sunday: #42.8–46.6 by season, #44.5 in 2026
+- [x] Polls in the pipeline (2026-10-24): CBBD `/rankings` cached as `data/raw/cbbd/rankings_<s>.json` → `polls` table (AP + Coaches, every release, receiving-votes rows with rank NA; CBBD team ids → ESPN via shared games, pooled over seasons). Release dates missing before 2016-17 are filled from the week number. `polls_db` (reread every run, outside the sync fingerprint) → `polls_<s>` matched to the snapshot on or just before each release → `snapshots$polls`
+- [x] WAB benchmark = the last team in (2026-10-24): per draw, the automatic bids leave the power ranking and the benchmark is the (field − automatic bids)-th best remaining team (`auto_bids()` / `wab_draws()` in `R/04_resume.R`, `field_size()` in `R/03_model.R`). Automatic bids: conference tournament champions once the final is played (`champions` table from CBBD game notes; every final 2014–2026 found, Ivy before 2016-17 and 2020's cancelled tournaments fall back), otherwise the conference standings leader, ties to the higher rating in that draw. The benchmark's mean power rank is stored as `params$bench_rank`, P(automatic bid) as `resume$p_auto`. 2026 check with approximate draws: #45.7 in mid-November, #44.4 on Selection Sunday. Still to do: replace the standings leader with the conference-tournament simulation (Phase 5); 2017, 2022 and 2023 each have one champion that was not in the field (likely ineligible transitioning schools)
 
 ## 0. Pilot (done 2026-10-23)
 
@@ -56,7 +58,7 @@ model fits (`prior_*` from 2014-15 on, `inputs_*`, `snaps_*`) have not been run.
 
 ## 3. Team model
 
-- [ ] Re-derive the σ_conf / σ_team / τ prior centres from pooled vague-prior refits (pilot used in-sample 2025-26 means) and re-check gates on every snapshot
+- [x] Re-derive the σ_conf / σ_team / τ prior centres from pooled vague-prior refits (`pilot/out/09_pooled_priors.md`); gates re-checked by `check_build.R` after the rebuild
 - [ ] Rerun the full pilot backtest with the converging defaults (4 × 1000, informative priors)
 - [ ] Tempo + total submodel (CFB `t` / total model) → spreads and totals in points
 - [ ] HCA per season with pooled prior; 2020-21 separate; test shrunk team HCA
@@ -66,10 +68,10 @@ model fits (`prior_*` from 2014-15 on, `inputs_*`, `snaps_*`) have not been run.
 - [ ] Non-D1 games in the ingest: `build_games(division = "nond1")` for every season; check non-D1 team ids are stable across seasons
 - [x] Exhibitions: no single or two-source feed; school-site scraper parked (`pilot/out/08_exhibitions.md`)
 - [ ] Margin family comparison (normal / t / mixture / scale-t) by pooled LOO (CFB `margin_comparison`)
-- [ ] Vague-prior refits 2015–2026 → pooled priors in `model_config()`
+- [x] Vague-prior refits 2015–2026 → pooled priors in `model_config()`
 - [ ] Add two-seasons-back term (`use_prev2`)
 - [x] `targets` pipeline: per-season targets, snapshot branches (opening night, Mondays, final), gates; `check_build.R` fails on an errored target or a failing live snapshot
-- [ ] Full rolling backtest 2016–2026 vs closing line and Torvik; Nov–Dec vs Jan–Apr
+- [x] Full rolling backtest 2016–2026 vs closing line and Torvik; Nov–Dec vs Jan–Apr (2026-10-24, `pilot/out/10_backtest.md`): 54,388 games, MAE 8.913 vs Torvik 8.981 vs line 8.791; ahead of Torvik in all 11 seasons; Jan–Apr 8.677 / 8.785 / 8.596, Nov–Dec 9.325 / 9.320 / 9.130 (the early-season gap is the preseason prior → Phase 4). Torvik time-machine ratings the day before each snapshot (`torvik_<s>` targets), reported by `check_build.R`
 
 ## 4. Roster prior
 
@@ -84,7 +86,7 @@ model fits (`prior_*` from 2014-15 on, `inputs_*`, `snaps_*`) have not been run.
 
 ## 5. Resume
 
-- [ ] Bubble rank per season from past fields (rank of the last at-large team in each draw); shift for 44 at-large bids in 2027
+- [x] Bubble rank per season: replaced by the moving benchmark, the last team in per draw (see Next)
 - [ ] Automatic bids: detect conference champions historically; simulate conference tournaments in season
 - [ ] P(at-large), P(auto bid), P(in field) jointly from the simulation
 - [ ] Team sheet: quadrant records (own ranks; NET via `cbbdata` for comparison), SOR, SOS, luck, Colley

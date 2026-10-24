@@ -47,7 +47,8 @@ if (!is.null(cov)) {
   played <- cov$d1_played > 0
   if (any(cov$eff_share[played] < 0.8)) say("WARN", "efficiency signal below 80% of games in ", paste(cov$season[played & cov$eff_share < 0.8], collapse = ", "))
   if (any(cov$line_share[played] < 0.7)) say("WARN", "closing lines below 70% of games in ", paste(cov$season[played & cov$line_share < 0.7], collapse = ", "))
-  if (any(cov$prior_torvik < 0.95 * cov$d1_teams)) say("WARN", "Torvik preseason matched < 95% of teams in ", paste(cov$season[cov$prior_torvik < 0.95 * cov$d1_teams], collapse = ", "), " (add rows to data/torvik_names.csv)")
+  low <- cov$season > min(cov$season) & cov$prior_torvik < 0.95 * cov$d1_teams   # the carry-over season uses no Torvik prior
+  if (any(low)) say("WARN", "Torvik preseason matched < 95% of teams in ", paste(cov$season[low], collapse = ", "), " (add rows to data/torvik_names.csv)")
 }
 
 # Backtest vs the closing line
@@ -57,6 +58,12 @@ if (!is.null(bt) && nrow(bt$overall) && bt$overall$games > 0) {
   say("INFO", sprintf("backtest: %d games, MAE %.2f (line %.2f on %d lined games), log loss %.4f, ATS %.1f%%",
                       o$games, o$mae, o$mae_line, o$with_line, o$logloss, 100 * o$ats))
   if (o$mae_on_lined - o$mae_line > 0.25) say("WARN", "model MAE more than 0.25 pts worse than the closing line")
+  v <- bt$vs_overall
+  if (!is.null(v) && nrow(v) && v$games > 0) {
+    say("INFO", sprintf("vs Torvik (%d games with both and a line): MAE %.3f / Torvik %.3f / line %.3f, log loss %.4f / Torvik %.4f",
+                        v$games, v$mae, v$mae_torvik, v$mae_line, v$logloss, v$logloss_torvik))
+    if (v$mae > v$mae_torvik) say("WARN", "model MAE worse than Torvik's")
+  }
 }
 
 if (fails > 0 && !interactive()) quit(status = 1)

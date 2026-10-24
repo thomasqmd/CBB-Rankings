@@ -2,10 +2,10 @@
 # Model inputs, fitting and summaries. A snapshot at date d uses games played before d.
 # ==============================================================================
 
-# Resume benchmark: the bubble team's rank by power. 45 fits the 68-team field (37 at-large bids;
-# pilot/out/04_wab.md). The 76-team field from 2027 (44 at-large) gets a provisional 52 until the
-# bubble calibration (todo, Phase 5) sets it.
-bubble_rank <- function(season, cfg = model_config()) if (season >= cfg$field76_from) cfg$bubble_76 else cfg$bubble_68
+# Resume benchmark: the last team in. Per draw, the automatic bids (one per conference) leave
+# the power ranking and the benchmark is the n-th best remaining team, n = field size - automatic
+# bids (36 with 32 conferences, 37 with 31; the 76-team field from 2027 adds 8).
+field_size <- function(season, cfg = model_config()) if (season >= cfg$field76_from) 76L else 68L
 
 model_config <- function(...) {
   utils::modifyList(list(
@@ -17,15 +17,15 @@ model_config <- function(...) {
     conf_carry = FALSE,          # carry conference strength separately from within-conference rating
     conf_centred = FALSE,        # centred conference means (better once conferences have many games)
     use_nd = TRUE,               # include games against non-D1 teams (one pooled non-D1 level)
-    # Informative scale priors are what make every snapshot pass the gates (pilot/out/07_convergence.md).
-    # Centres are 2025-26 posterior means (in-sample); the full build pools 2015-2025 refits instead.
-    sigma_conf_prior = c(4.5, 0.7), sigma_team_prior = c(6.4, 0.6), tau_prior = c(0.6, 0.1),
+    # Informative scale priors are what make every snapshot pass the gates (pilot/out/07_convergence.md),
+    # pooled from vague-prior refits of each season's final snapshot, 2015-2026 (pilot/conv/07_pooled_priors.R)
+    sigma_conf_prior = c(1.48, 0.2), sigma_team_prior = c(4.27, 0.35), tau_prior = c(0.56, 0.1),
     chains = 4, warmup = 1000, sampling = 1000, adapt_delta = 0.9, seed = 2026,
     poss_ref = 70,               # possessions at which a per-100 rate has unit weight
     tempo_shrink = 4,            # games of league-average tempo in each team's tempo estimate
     prior_torvik_weight = 0.5,   # preseason prior: weight on Torvik's preseason rating vs our final rating (pilot A8)
     prior_sd_default = 3,        # carry-over sd for a team with no rating of ours last season
-    bubble_68 = 45L, bubble_76 = 52L, field76_from = 2027L,
+    field76_from = 2027L,         # first season of the 76-team field
     snap_every = 7               # days between historical snapshots (Mondays)
   ), list(...))
 }
