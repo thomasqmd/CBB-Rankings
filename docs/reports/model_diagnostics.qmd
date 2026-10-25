@@ -106,13 +106,15 @@ snapshot), so no result informs its own prediction. The closing line is CBBD's c
 ```{r}
 #| label: tbl-bt
 #| tbl-cap: "Backtest by season: margin, win probability and total"
+total_labels <- c(mae_total_on_lined = "Total MAE", mae_total_line = "O/U MAE")
+total_labels <- total_labels[names(total_labels) %in% names(bt$by_season)]
 bt$by_season |>
   select(any_of(c("season", "games", "mae", "mae_on_lined", "mae_line", "ats", "brier", "logloss",
                   "mae_total_on_lined", "mae_total_line"))) |>
   gt() |>
   cols_label(season = "Season", games = "Games", mae = "MAE", mae_on_lined = "MAE (lined)", mae_line = "Line MAE",
              ats = "ATS %", brier = "Brier", logloss = "Log loss") |>
-  cols_label(any_of(c(mae_total_on_lined = "Total MAE", mae_total_line = "O/U MAE"))) |>
+  cols_label(.list = as.list(total_labels)) |>
   fmt_number(c(mae, mae_on_lined, mae_line, any_of(c("mae_total_on_lined", "mae_total_line"))), decimals = 2) |>
   fmt_number(c(brier, logloss), decimals = 3) |>
   fmt_percent(ats, decimals = 1)

@@ -5,3 +5,6 @@ project:
   render:
     - "docs/dashboard.qmd"
     - "docs/reports/*.qmd"
+
+# theme assets live in the root _extensions/; reports render from docs/ and docs/reports/
+resource-path: [".", "..", "../.."]
