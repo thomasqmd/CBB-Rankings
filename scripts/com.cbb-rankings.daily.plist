@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Daily in-season build (scripts/daily_build.sh). Install:
+       cp scripts/com.cbb-rankings.daily.plist ~/Library/LaunchAgents/
+       launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.daily.plist
+     Remove: launchctl bootout gui/$(id -u)/com.cbb-rankings.daily
+     Runs at 07:00, after the night's games are final; a run missed while the Mac sleeps happens
+     on wake. Logs: logs/daily_<date>.log. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cbb-rankings.daily</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/sh</string><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/scripts/daily_build.sh</string></array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/logs/daily.log</string>
+  <key>StandardErrorPath</key><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/logs/daily.log</string>
+</dict>
+</plist>

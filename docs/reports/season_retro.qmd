@@ -1,0 +1,176 @@
+---
+title: "Season Report"
+subtitle: "Resume and Power rankings, the field, schedule, luck and polls"
+author: "Thomas Reinke"
+date: today
+format:
+  qmdthemes-personal-html:
+    toc: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+library(targets)
+library(dplyr)
+library(ggplot2)
+library(gt)
+
+# CBB_DASH_DATA (an .rds of build_dashboard_data() output) renders without the pipeline
+f <- Sys.getenv("CBB_DASH_DATA")
+d <- if (nzchar(f)) readRDS(f) else tar_read(dashboard_data)
+# The latest snapshot with a resume (in the preseason, last season's final)
+has_resume <- d$ranks |> filter(!is.na(wab)) |> distinct(s, w)
+pick <- has_resume |> arrange(s, w) |> slice_tail(n = 1)
+season <- pick$s
+snap <- d$snaps |> filter(s == season, w == pick$w)
+d1 <- d$ranks |> filter(s == season, w == pick$w)
+bench <- round(snap$bench_rank)
+label <- function(s) sprintf("%d-%02d", s - 1, s %% 100)
+
+c_resume <- "#3a6ea5"; c_power <- "#d1622a"; c_ink <- "#222222"; c_muted <- "#77756f"
+theme_report <- theme_minimal(base_size = 11) +
+  theme(panel.grid.minor = element_blank(), plot.title.position = "plot",
+        axis.title = element_text(color = c_muted))
+rec <- function(w, l) paste0(w, "–", l)
+```
+
+Season **`r label(season)`**, through **`r snap$label`** (`r snap$n_games` games, field of
+`r snap$field`). Estimated home-court edge: **`r sprintf("%.1f", snap$hca)` points** at an
+average tempo (`r sprintf("%.1f", snap$hca100)` per 100 possessions).
+
+## Resume: what teams have earned
+
+A team's resume is its **wins above bubble (WAB)**. Each D1 game scores 1 − P(the bubble team
+would have won it) for a win and −P(…) for a loss, with opponent strength and venue from the
+Power model. The bubble team is the last at-large team in: about #`r bench` in the power
+ranking once the automatic bids and ineligible teams are set aside. Zero means a team has done
+exactly what a bubble team would have.
+
+```{r}
+#| label: tbl-resume
+#| tbl-cap: "Top 25 by resume"
+d1 |>
+  arrange(rrk) |>
+  slice_head(n = 25) |>
+  transmute(Rank = rrk, Team = team, Conf = conf, Record = rec(wins, losses),
+            WAB = wab, `80% interval` = sprintf("%+.2f to %+.2f", wab_lo, wab_hi),
+            `Rank range` = sprintf("%d–%d", rrk_lo, rrk_hi), Q1 = rec(q1w, q1l),
+            `SOS rank` = sos_rk, Power = prk, AP = ap, Seed = seed) |>
+  gt() |>
+  fmt_number(WAB, decimals = 2, force_sign = TRUE) |>
+  sub_missing(missing_text = "–") |>
+  data_color(WAB, palette = c("#eef1f4", c_resume)) |>
+  tab_style(cell_text(weight = "bold"), cells_body(columns = c(Rank, Team)))
+```
+
+## Power: how good teams are
+
+Power ratings are points per 100 possessions better than an average D1 team on a neutral floor;
+offence and defence split the rating using the tempo-free scoring model (defence: points
+allowed, lower is better).
+
+```{r}
+#| label: tbl-power
+#| tbl-cap: "Top 25 by power"
+d1 |>
+  arrange(prk) |>
+  slice_head(n = 25) |>
+  transmute(Rank = prk, Team = team, Conf = conf, Record = rec(wins, losses),
+            Rating = pw, `80% interval` = sprintf("%+.1f to %+.1f", pw_lo, pw_hi),
+            `Rank range` = sprintf("%d–%d", prk_lo, prk_hi),
+            Off = off, `Off rank` = off_rk, Def = def, `Def rank` = def_rk, Tempo = tempo, Resume = rrk) |>
+  gt() |>
+  fmt_number(c(Rating, Off, Def), decimals = 1) |>
+  fmt_number(Tempo, decimals = 1) |>
+  data_color(Rating, palette = c("#fbeee6", c_power)) |>
+  tab_style(cell_text(weight = "bold"), cells_body(columns = c(Rank, Team)))
+```
+
+```{r}
+#| label: fig-scatter
+#| fig-cap: "Resume (WAB) against Power rating. Labelled: top 16 by either measure."
+#| fig-width: 9
+#| fig-height: 6
+lab <- d1 |> filter(rrk <= 16 | prk <= 16)
+ggplot(d1, aes(pw, wab)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = c_resume) +
+  geom_point(aes(color = !is.na(seed)), size = 2, alpha = 0.75, show.legend = FALSE) +
+  geom_text(data = lab, aes(label = team), vjust = -0.9, size = 3, color = c_ink, check_overlap = TRUE) +
+  scale_color_manual(values = c(`TRUE` = c_resume, `FALSE` = "#a9b5c3")) +
+  labs(x = "Power rating (points per 100 vs. average D1 team)", y = "Wins above bubble",
+       caption = if (any(!is.na(d1$seed))) "Blue: in the NCAA tournament field" else NULL) +
+  theme_report
+```
+
+## The field
+
+From the season simulation: the rest of the regular season and every conference tournament
+played out in each posterior draw, the champions taking the automatic bids and projected WAB
+picking the at-large teams. Once the season is over these are 0 or 1.
+
+```{r}
+#| label: tbl-bubble
+#| tbl-cap: "Bubble: at-large chances between 10% and 90%"
+bub <- d1 |> filter(elig, p_al >= 0.1, p_al <= 0.9) |> arrange(desc(p_field))
+if (!nrow(bub) || all(is.na(d1$p_field))) {
+  cat("No bubble at this snapshot.")
+} else {
+  bub |>
+    transmute(Team = team, Conf = conf, Record = rec(wins, losses), WAB = wab, `Projected WAB` = proj_wab,
+              `P(auto)` = p_auto, `P(at-large)` = p_al, `P(field)` = p_field, Q1 = rec(q1w, q1l), Power = prk) |>
+    gt() |>
+    fmt_number(c(WAB, `Projected WAB`), decimals = 2, force_sign = TRUE) |>
+    fmt_percent(starts_with("P("), decimals = 0)
+}
+```
+
+## Schedule strength and luck
+
+**SOS** is the bubble team's expected loss rate against the schedule (higher = harder).
+**Luck** is wins minus expected wins, where expected wins use the team's own rating.
+
+```{r}
+#| label: tbl-luck
+#| tbl-cap: "Luckiest and unluckiest D1 teams"
+bind_rows(
+  d1 |> arrange(desc(luck)) |> slice_head(n = 8),
+  d1 |> arrange(luck) |> slice_head(n = 8)
+) |>
+  transmute(Team = team, Record = rec(wins, losses), Luck = luck, Resume = rrk, Power = prk) |>
+  gt() |>
+  fmt_number(Luck, decimals = 1, force_sign = TRUE) |>
+  tab_row_group("Least lucky", rows = 9:16) |>
+  tab_row_group("Most lucky", rows = 1:8)
+```
+
+```{r}
+#| label: tbl-sos
+#| tbl-cap: "Hardest schedules"
+d1 |>
+  arrange(sos_rk) |>
+  slice_head(n = 15) |>
+  transmute(`SOS rank` = sos_rk, Team = team, Record = rec(wins, losses),
+            `Bubble loss rate` = sos, Resume = rrk, Power = prk) |>
+  gt() |>
+  fmt_percent(`Bubble loss rate`, decimals = 0)
+```
+
+## Polls
+
+```{r}
+#| label: tbl-polls
+#| tbl-cap: "Model vs. AP poll (the latest release on or before the snapshot). Gap = AP − Resume; unranked = 30."
+if (all(is.na(d1$ap))) {
+  cat("No AP poll matches this snapshot.")
+} else {
+  d1 |>
+    filter(!is.na(ap) | rrk <= 25) |>
+    mutate(gap = coalesce(ap, 30L) - rrk) |>
+    arrange(desc(abs(gap))) |>
+    transmute(Team = team, Record = rec(wins, losses), Resume = rrk, Power = prk,
+              AP = ap, Coaches = coaches, Colley = colley_rk, Gap = gap) |>
+    gt() |>
+    sub_missing(missing_text = "–")
+}
+```

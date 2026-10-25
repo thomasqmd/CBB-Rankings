@@ -1,0 +1,205 @@
+---
+title: "Model Diagnostics"
+subtitle: "Convergence gates, estimated structure, out-of-sample accuracy and the shot model"
+author: "Thomas Reinke"
+date: today
+format:
+  qmdthemes-personal-html:
+    toc: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+library(targets)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gt)
+
+snapshots <- tar_read(snapshots)
+bt <- tar_read(backtest)
+params <- snapshots$params
+gates <- snapshots$gates
+shots <- tryCatch(tar_read(shot_calibration), error = \(e) NULL)
+cov <- tar_read(coverage)
+
+c_power <- "#d1622a"; c_resume <- "#3a6ea5"; c_muted <- "#77756f"
+theme_report <- theme_minimal(base_size = 11) +
+  theme(panel.grid.minor = element_blank(), plot.title.position = "plot",
+        axis.title = element_text(color = c_muted))
+```
+
+## Convergence gates
+
+Every snapshot is fit with 4 chains × 1000 draws and should pass R̂ ≤ 1.01, ESS ≥ 400 (bulk and
+tail), zero divergences and E-BFMI > 0.2. `check_build.R` fails the build when the live
+season's latest snapshot misses a gate.
+
+```{r}
+#| label: tbl-gates
+#| tbl-cap: "Gate results by season"
+gates |>
+  left_join(params[, c("season", "snap_date", "secs")], by = c("season", "snap_date")) |>
+  group_by(Season = season) |>
+  summarise(Snapshots = n(), Passed = sum(pass), `Worst R̂` = max(max_rhat), `Min ESS` = min(min_ess),
+            Divergences = sum(divergences), `Fit time (min)` = sum(secs) / 60) |>
+  gt() |>
+  fmt_number(`Worst R̂`, decimals = 3) |>
+  fmt_number(c(`Min ESS`, `Fit time (min)`), decimals = 0)
+```
+
+```{r}
+#| label: tbl-failed
+failed <- gates |> filter(!pass)
+if (nrow(failed) > 0) {
+  failed |>
+    select(season, snap_date, kind, max_rhat, min_ess, divergences, min_ebfmi, worst) |>
+    gt(caption = "Snapshots that missed a gate") |>
+    fmt_number(c(max_rhat, min_ebfmi), decimals = 3) |>
+    fmt_number(min_ess, decimals = 0)
+}
+```
+
+## Estimated structure
+
+```{r}
+#| label: fig-params
+#| fig-cap: "Population-level parameters at each season's final snapshot. Home court and game noise are per 100 possessions."
+#| fig-width: 9
+#| fig-height: 6
+params |>
+  filter(kind == "final") |>
+  select(season, any_of(c(`Home court` = "hca", `Game noise σ` = "sigma_game", `Team spread σ` = "sigma_team",
+         `Conference spread σ` = "sigma_conf", `Preseason carry-over` = "b_prev", `Two-season carry-over` = "b_prev2",
+         `Weekly drift τ` = "tau", `Bubble rank` = "bench_rank"))) |>
+  pivot_longer(-season) |>
+  ggplot(aes(season, value)) +
+  geom_line(color = c_power, linewidth = 0.8) +
+  geom_point(color = c_power, size = 2) +
+  facet_wrap(~name, scales = "free_y", ncol = 4) +
+  labs(x = NULL, y = NULL) +
+  theme_report
+```
+
+```{r}
+#| label: fig-hca-path
+#| fig-cap: "Home-court edge through each season (per 100 possessions). Early snapshots rest on few games."
+#| fig-width: 9
+#| fig-height: 4
+params |>
+  group_by(season) |>
+  mutate(day = as.numeric(snap_date - min(snap_date))) |>
+  ungroup() |>
+  ggplot(aes(day, hca, group = season, color = season == max(season))) +
+  geom_line(alpha = 0.7) +
+  scale_color_manual(values = c(`TRUE` = c_power, `FALSE` = "#b9b6ae"), guide = "none") +
+  labs(x = "Days since opening night", y = "Home edge") +
+  theme_report
+```
+
+## Out-of-sample accuracy
+
+Each game is predicted by the latest snapshot before it (opening-week games by the preseason
+snapshot), so no result informs its own prediction. The closing line is CBBD's consensus.
+
+```{r}
+#| label: tbl-bt
+#| tbl-cap: "Backtest by season: margin, win probability and total"
+bt$by_season |>
+  select(any_of(c("season", "games", "mae", "mae_on_lined", "mae_line", "ats", "brier", "logloss",
+                  "mae_total_on_lined", "mae_total_line"))) |>
+  gt() |>
+  cols_label(season = "Season", games = "Games", mae = "MAE", mae_on_lined = "MAE (lined)", mae_line = "Line MAE",
+             ats = "ATS %", brier = "Brier", logloss = "Log loss") |>
+  cols_label(any_of(c(mae_total_on_lined = "Total MAE", mae_total_line = "O/U MAE"))) |>
+  fmt_number(c(mae, mae_on_lined, mae_line, any_of(c("mae_total_on_lined", "mae_total_line"))), decimals = 2) |>
+  fmt_number(c(brier, logloss), decimals = 3) |>
+  fmt_percent(ats, decimals = 1)
+```
+
+```{r}
+#| label: tbl-vs
+#| tbl-cap: "Head to head with Torvik's time-machine ratings and the closing line (games all three predicted)"
+bind_rows(bt$vs_period, mutate(bt$vs_overall, period = "All")) |>
+  select(Period = period, Games = games, Model = mae, Torvik = mae_torvik, Line = mae_line,
+         `Log loss` = logloss, `Torvik log loss` = logloss_torvik, `Closer than Torvik` = closer_than_torvik) |>
+  gt() |>
+  fmt_number(c(Model, Torvik, Line), decimals = 3) |>
+  fmt_number(c(`Log loss`, `Torvik log loss`), decimals = 4) |>
+  fmt_percent(`Closer than Torvik`, decimals = 1)
+```
+
+```{r}
+#| label: fig-bt-month
+#| fig-cap: "Mean absolute error by month (lined games), model vs. closing line."
+#| fig-width: 9
+#| fig-height: 4.5
+bt$games |>
+  filter(!is.na(line)) |>
+  mutate(month = factor(format(game_date, "%b"), levels = c("Nov", "Dec", "Jan", "Feb", "Mar", "Apr"))) |>
+  group_by(month) |>
+  summarise(Model = mean(abs(actual - pred_margin)), `Closing line` = mean(abs(actual - line)), n = n()) |>
+  pivot_longer(c(Model, `Closing line`)) |>
+  ggplot(aes(month, value, color = name, group = name)) +
+  geom_line(linewidth = 0.8) + geom_point(size = 2) +
+  scale_color_manual(values = c(Model = c_power, `Closing line` = "#52514e"), name = NULL) +
+  labs(x = NULL, y = "MAE (points)") +
+  theme_report + theme(legend.position = "top")
+```
+
+```{r}
+#| label: fig-calibration
+#| fig-cap: "Calibration of pregame home win probabilities (all backtest games)."
+#| fig-width: 6
+#| fig-height: 5
+cal <- if (!is.null(bt$calibration)) bt$calibration else
+  bt$games |> mutate(bin = pmin(floor(p_home * 20), 19)) |> group_by(bin) |>
+    summarise(n = n(), pred = mean(p_home), obs = mean(home_win), .groups = "drop")
+ggplot(cal, aes(pred, obs)) +
+  geom_abline(linetype = "dashed", color = c_muted) +
+  geom_line(color = c_power, linewidth = 0.8) +
+  geom_point(aes(size = n), color = c_power) +
+  scale_x_continuous(labels = scales::percent, limits = c(0, 1)) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  scale_size_area(max_size = 6, guide = "none") +
+  labs(x = "Predicted home win probability", y = "Observed") +
+  coord_equal() + theme_report
+```
+
+## Shot model
+
+The make model behind the efficiency signal is fit on the seasons before each season and scored
+on that season's shots, so these are out-of-sample. A family off by more than 2 points is
+flagged by `check_build.R`; only the three-point model feeds the default signal (`lux100`).
+
+```{r}
+#| label: fig-shots
+#| fig-cap: "Predicted minus actual make rate by shot family and season (percentage points)."
+#| fig-width: 9
+#| fig-height: 4.5
+if (is.null(shots)) {
+  cat("No shot_calibration target yet.")
+} else {
+  ggplot(shots, aes(season, 100 * (pred - actual), color = family)) +
+    geom_hline(yintercept = 0, color = c_muted) +
+    geom_hline(yintercept = c(-2, 2), color = c_muted, linetype = "dotted") +
+    geom_line(linewidth = 0.7) + geom_point(size = 1.8) +
+    labs(x = NULL, y = "Predicted − actual (pp)", color = NULL) +
+    theme_report + theme(legend.position = "top")
+}
+```
+
+## Data coverage
+
+```{r}
+#| label: tbl-coverage
+#| tbl-cap: "Coverage by season"
+cov |>
+  select(any_of(c(Season = "season", `D1 teams` = "d1_teams", `Not eligible` = "ineligible", `D1 games` = "d1_games",
+                  Played = "d1_played", `Non-D1 played` = "nond1_played", `Efficiency signal` = "eff_share",
+                  `Closing line` = "line_share", OT = "ot", Neutral = "neutral", `Sites recoded` = "site_recoded",
+                  `Torvik prior` = "prior_torvik"))) |>
+  gt() |>
+  fmt_percent(any_of(c("Efficiency signal", "Closing line")), decimals = 0)
+```

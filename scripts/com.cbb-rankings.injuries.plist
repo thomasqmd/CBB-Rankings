@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Daily ESPN injury report archive. Install:
+       cp scripts/com.cbb-rankings.injuries.plist ~/Library/LaunchAgents/
+       launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.injuries.plist
+     Remove: launchctl bootout gui/$(id -u)/com.cbb-rankings.injuries
+     Runs at 15:00 (before evening tips) and again at 21:00 if the first run was missed; a run
+     missed while the Mac sleeps happens on wake. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cbb-rankings.injuries</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/sh</string><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/scripts/poll_injuries.sh</string></array>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>15</integer><key>Minute</key><integer>0</integer></dict>
+    <dict><key>Hour</key><integer>21</integer><key>Minute</key><integer>0</integer></dict>
+  </array>
+  <key>StandardOutPath</key><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/logs/injuries.log</string>
+  <key>StandardErrorPath</key><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/logs/injuries.log</string>
+</dict>
+</plist>

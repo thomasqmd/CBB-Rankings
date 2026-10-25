@@ -35,3 +35,27 @@ test_that("FT% before a game uses only earlier attempts", {
   expect_equal(r$ft_pct[1], lg)                                  # nothing before game 1
   expect_equal(r$ft_pct[3], (2 + FT_SHRINK * lg) / (2 + FT_SHRINK))
 })
+
+test_that("a neutral game on one team's floor is that team's home game", {
+  floors <- data.frame(team_id = c(1L, 2L, 3L, 4L), venue_id = c(10L, 20L, 30L, 30L))
+  g <- data.frame(home_id = c(1L, 1L, 1L, 1L, 5L, 3L, 1L), away_id = c(2L, 2L, 2L, 2L, 6L, 4L, 2L),
+                  venue_id = c(10L, 99L, 20L, 20L, 10L, 30L, NA), neutral_site = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE))
+  v <- venue_site(g, floors)
+  expect_equal(v$site, c(1L, 0L, -1L, -1L, 0L, 0L, 1L))   # shared floor (3, 4) stays neutral
+  expect_equal(v$site_note[c(1, 3, 4)], c("neutral, home team's floor", "neutral, away team's floor", "away team's floor"))
+  expect_true(all(is.na(v$site_note[c(2, 5, 6, 7)])))
+})
+
+test_that("a floor needs FLOOR_MIN_GAMES non-neutral home games", {
+  s <- data.frame(venue_id = c(10L, 10L, 11L, 12L, 12L), home_id = 1L, neutral_site = c(FALSE, FALSE, FALSE, TRUE, TRUE))
+  expect_equal(team_floors(s)$venue_id, 10L)
+})
+
+test_that("summary-API games become schedule rows with box-score possessions", {
+  x <- read_espn_summaries(test_path("fixtures", "summary_400853175.json"))
+  expect_equal(x$game_id, 400853175L)
+  expect_equal(x$game_date, as.Date("2015-11-20"))             # 00:30 UTC on the 21st is the 20th in the East
+  expect_equal(c(x$home_id, x$away_id, x$home_score, x$away_score), c(2623L, 135L, 69L, 74L))
+  expect_true(x$neutral_site)
+  expect_equal(x$poss, mean(c(56 - 8 + 12 + 0.475 * 19, 54 - 13 + 11 + 0.475 * 37)))
+})

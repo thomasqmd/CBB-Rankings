@@ -30,3 +30,13 @@ test_that("a season replaces its rows, and an empty table is fine", {
   db_replace_season(con, "t", data.frame(x = integer()), 2015)
   expect_equal(DBI::dbGetQuery(con, "SELECT season, x FROM t")$season, 2016L)
 })
+
+test_that("a season with new columns rewrites the table", {
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  db_replace_season(con, "t", data.frame(x = 1:2), 2015)
+  db_replace_season(con, "t", data.frame(x = 3L, y = "a"), 2016)
+  out <- DBI::dbGetQuery(con, "SELECT season, x, y FROM t ORDER BY x")
+  expect_equal(out$season, c(2015L, 2015L, 2016L))
+  expect_equal(out$y, c(NA, NA, "a"))
+})

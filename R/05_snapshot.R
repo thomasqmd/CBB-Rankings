@@ -33,8 +33,14 @@ snapshot_dates <- function(games, season, today = Sys.Date(), cfg = model_config
   sel <- selection_monday(d1)
   kind <- ifelse(dates == opening, "preseason", ifelse(dates == end, if (live) "live" else "final", "weekly"))
   kind[!is.na(sel) & dates == sel & kind == "weekly"] <- "selection"
-  nxt <- c(dates[-1], if (live) end + cfg$snap_every else as.Date(NA))
-  data.frame(snap_date = dates, next_date = nxt, kind = kind)
+  # each snapshot predicts until the next fixed one (a Monday); in a live season the last Monday
+  # predicts its week and today's snapshot the week from today, so neither input moves day to day
+  fixed <- dates[kind != "live"]
+  nxt <- vapply(seq_along(dates), function(i) {
+    later <- fixed[fixed > dates[i]]
+    if (length(later)) later[1] else if (live) dates[i] + cfg$snap_every else NA_real_
+  }, numeric(1))
+  data.frame(snap_date = dates, next_date = as.Date(nxt), kind = kind)
 }
 
 # One snapshot: fit, then the tables the dashboard and backtest read
@@ -44,19 +50,21 @@ run_snapshot <- function(inp, season, kind = "weekly", cfg = model_config()) {
   ratings <- summarise_ratings(fit, inp)
   bench_rank <- NA_real_
   resume <- if (nrow(inp$games)) {
-    w <- wab_draws(fit, inp, field = field_size(season, cfg), champs = inp$champs)
+    w <- wab_draws(fit, inp, field = field_size(season, cfg), champs = inp$champs, tourney = inp$tourney)
     bench_rank <- mean(attr(w, "bench_rank"))
-    dplyr::left_join(ratings[, c("team_id", "team", "conf")], summarise_resume(w, inp), by = "team_id")
+    ratings[, c("team_id", "team", "conf")] |>
+      dplyr::left_join(summarise_resume(w, inp), by = "team_id") |>
+      dplyr::left_join(team_sheet(fit, inp, ratings), by = "team_id")
   }
   preds <- if (nrow(inp$upcoming)) {
-    keep <- c("game_id", "game_date", "home_id", "away_id", "home", "away", "neutral", "season_type", "tournament",
-              "played", "home_score", "away_score", "spread", "total_line")
+    keep <- c("game_id", "game_date", "home_id", "away_id", "home", "away", "neutral", "site", "season_type", "tournament")
     pr <- predict_games(fit, inp, inp$upcoming)
-    pr[, c(intersect(keep, names(pr)), "pred_margin", "pred_poss", "p_home")]
+    pr[, c(intersect(keep, names(pr)), "pred_margin", "pred_poss", "pred_total", "p_home")]
   }
   list(
     ratings = tag(ratings), resume = tag(resume), predictions = tag(preds),
-    params = tag(data.frame(t(colMeans(fit$par)), bench_rank = bench_rank, n_games = nrow(inp$games), n_nd = inp$stan$N_nd, secs = fit$secs)),
+    params = tag(data.frame(t(colMeans(fit$par)), bench_rank = bench_rank, mu_p = inp$tempo$mu_p[1], mu_t = inp$tempo$mu_t[1],
+                            n_games = nrow(inp$games), n_nd = inp$stan$N_nd, secs = fit$secs)),
     gates = tag(data.frame(t(fit$gates), worst = fit$worst$variable[1],
                            pass = fit$gates[["max_rhat"]] <= 1.01 && fit$gates[["min_ess"]] >= 400 &&
                                   fit$gates[["divergences"]] == 0 && fit$gates[["min_ebfmi"]] > 0.2))
@@ -83,10 +91,17 @@ match_polls <- function(polls, dates) {
   out[, c("season", "snap_date", setdiff(names(out), c("season", "snap_date")))]
 }
 
-# Next season's carry-over: the season's last snapshot
+# Next season's carry-over: the season's last snapshot (rating and its sd; tempo and total
+# effects with the league levels, for the tempo submodel)
 season_final_prior <- function(snaps) {
   r <- snaps[[length(snaps)]]$ratings
-  data.frame(team_id = r$team_id, prev_dev = r$rating, prev_sd = r$sd)
+  p <- snaps[[length(snaps)]]$params
+  out <- data.frame(team_id = r$team_id, prev_dev = r$rating, prev_sd = r$sd)
+  if (!is.null(r$tempo_eff)) {
+    out$prev_t <- r$tempo_eff; out$prev_s <- r$total_eff
+    out$prev_mu_p <- p$mu_p; out$prev_mu_t <- p$mu_t
+  }
+  out
 }
 
 # Torvik's ratings at each snapshot: the time-machine file for the day before (so he has the
@@ -111,11 +126,21 @@ torvik_margin <- function(p, tv) {
   (h$adj_o * a$adj_d - a$adj_o * h$adj_d) / h$lg_o * (h$adj_t * a$adj_t / h$lg_t) / 100
 }
 
-# Every prediction of a completed game, scored against the result and the closing line, and
-# against Torvik's ratings at the same snapshot. Torvik's home court and margin sd come from
-# earlier seasons only (none for the first season, which is left out of the comparison).
-run_backtest <- function(predictions, torvik = NULL) {
+# Every prediction of a completed game (from the latest snapshot before it), scored against the
+# result, the closing line and total, and against Torvik's ratings at the same snapshot. Torvik's
+# home court and margin sd come from earlier seasons only (none for the first season, which is
+# left out of the comparison). outcomes: season, game_id, played, scores, spread, total_line.
+run_backtest <- function(predictions, torvik = NULL, outcomes = NULL) {
+  if (!is.null(outcomes)) {
+    predictions <- predictions[, setdiff(names(predictions), c("played", "home_score", "away_score", "spread", "total_line"))]
+    predictions <- dplyr::left_join(predictions, outcomes[, c("season", "game_id", "played", "home_score", "away_score", "spread", "total_line")],
+                                    by = c("season", "game_id"))
+  }
   p <- predictions[predictions$played %in% TRUE, ]
+  p <- p[order(p$season, p$game_id, p$snap_date, decreasing = TRUE), ]
+  p <- p[!duplicated(p[, c("season", "game_id")]), ]
+  p$actual_total <- p$home_score + p$away_score
+  if (is.null(p$pred_total)) p$pred_total <- NA_real_
   p$actual <- p$home_score - p$away_score
   p$line <- -p$spread
   p$home_win <- as.integer(p$actual > 0)
@@ -123,11 +148,11 @@ run_backtest <- function(predictions, torvik = NULL) {
   p$pred_torvik <- p$p_torvik <- NA_real_
   if (!is.null(torvik) && nrow(torvik)) {
     raw <- torvik_margin(p, torvik)
-    home <- 1 - p$neutral
+    home <- game_site(p)
     for (s in sort(unique(p$season))) {
       past <- p$season < s & !is.na(raw)
       if (!any(past)) next
-      hca <- mean((p$actual - raw)[past & home == 1])
+      hca <- mean(((p$actual - raw) * home)[past & home != 0])
       sd_m <- stats::sd((p$actual - raw - hca * home)[past])
       now <- p$season == s
       p$pred_torvik[now] <- raw[now] + hca * home[now]
@@ -143,6 +168,9 @@ run_backtest <- function(predictions, torvik = NULL) {
     ats = mean((sign(actual - line) == sign(pred_margin - line))[!is.na(line) & actual != line & pred_margin != line]),
     brier = mean((p_home - home_win)^2),
     logloss = ll(p_home, home_win),
+    mae_total = mean(abs(actual_total - pred_total), na.rm = TRUE),
+    mae_total_line = mean(abs(actual_total - total_line), na.rm = TRUE),
+    mae_total_on_lined = mean(abs(actual_total - pred_total)[!is.na(total_line)], na.rm = TRUE),
     .groups = "drop")
   # Head to head on the games all three predicted (model, Torvik, closing line)
   vs <- function(d) d |> dplyr::filter(!is.na(pred_torvik), !is.na(line)) |> dplyr::summarise(
@@ -159,7 +187,14 @@ run_backtest <- function(predictions, torvik = NULL) {
        by_period = score(dplyr::group_by(p, season, period)),
        vs_overall = vs(p),
        vs_period = vs(dplyr::group_by(p, period)),
-       vs_season = vs(dplyr::group_by(p, season)))
+       vs_season = vs(dplyr::group_by(p, season)),
+       calibration = p |> dplyr::mutate(bin = pmin(floor(p_home * 20), 19)) |> dplyr::group_by(bin) |>
+         dplyr::summarise(n = dplyr::n(), pred = mean(p_home), obs = mean(home_win), .groups = "drop"))
+}
+
+# A season's results, joined to the predictions by run_backtest()
+game_outcomes <- function(games) {
+  games[games$division %in% "d1", c("season", "game_id", "played", "home_score", "away_score", "spread", "total_line")]
 }
 
 # Development: keep opening night plus the last n - 1 dates (n = 0 keeps all)
@@ -171,26 +206,35 @@ limit_snaps <- function(dates, n) {
 }
 
 # One branch's Stan input (dates is a one-row slice of snapshot_dates()); champs = the season's
-# conference champions (champions table), for the resume benchmark's automatic bids
-snapshot_input <- function(games, dates, teams, prior, cfg = model_config(), champs = NULL) {
+# conference champions (champions table) and tourney = conference-tournament sizes (tourney_sizes()
+# of an earlier season), for the season simulation's automatic bids
+snapshot_input <- function(games, dates, teams, prior, cfg = model_config(), champs = NULL, tourney = NULL) {
   inp <- prepare_input(games, dates$snap_date, teams, prior, cfg,
                        next_date = if (is.na(dates$next_date)) NULL else dates$next_date)
   inp$kind <- dates$kind
-  inp$champs <- champs
+  inp$champs <- if (!is.null(champs)) champs[champs$game_date < dates$snap_date, ]      # only finals played by then
+  inp$tourney <- tourney
   inp
 }
 
 # Per-season data coverage: games, how many the model can use, lines, the efficiency signal,
-# preseason prior sources
+# venues (recoded to a team's floor; ESPN and CBBD neutral flags disagreeing), D1 membership
+# (teams ESPN lists, those not yet NCAA-tournament eligible, teams whose conference in CBBD's games
+# differs from ESPN's listing), preseason prior sources
 coverage_report <- function(games, priors, teams) {
   do.call(rbind, lapply(names(games), function(s) {
     g <- games[[s]]; d1 <- g[g$division == "d1", ]
     src <- attr(priors[[s]], "sources")
-    data.frame(season = as.integer(s), d1_teams = nrow(teams[[s]]),
+    tm <- teams[[s]]
+    gc <- team_conferences(g)
+    data.frame(season = as.integer(s), d1_teams = nrow(tm),
+               ineligible = if (is.null(tm$eligible)) NA_integer_ else sum(!tm$eligible),
+               conf_differs = sum(gc$conf != tm$conf[match(gc$team_id, tm$team_id)], na.rm = TRUE),
                d1_games = nrow(d1), d1_played = sum(d1$played), nond1_played = sum(g$played[g$division == "nond1"]),
                eff_share = mean(d1$has_eff[d1$played]), line_share = mean(!is.na(d1$spread[d1$played])),
-               ot = sum(d1$ot[d1$played]), neutral = sum(d1$neutral[d1$played] == 1),
+               ot = sum(d1$ot[d1$played]), neutral = sum(game_site(d1)[d1$played] == 0),
                neutral_disagree = sum((d1$neutral == 1) != d1$cbbd_neutral, na.rm = TRUE),
+               site_recoded = if (is.null(d1$site_note)) NA_integer_ else sum(!is.na(d1$site_note[d1$played])),
                prior_own = src[["own"]], prior_torvik = src[["torvik"]])
   }))
 }

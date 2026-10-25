@@ -4,7 +4,7 @@
 # ==============================================================================
 
 suppressMessages(library(targets))
-source("R/01_ingest.R")
+source("R/01_ingest.R"); source("R/03_model.R")
 fails <- 0L
 say <- function(level, ...) {
   cat(sprintf("[%s] %s\n", level, paste0(...)))
@@ -51,6 +51,39 @@ if (!is.null(cov)) {
   if (any(low)) say("WARN", "Torvik preseason matched < 95% of teams in ", paste(cov$season[low], collapse = ", "), " (add rows to data/torvik_names.csv)")
 }
 
+# D1 membership and venues
+if (!is.null(cov) && !is.null(cov$ineligible)) {
+  say("INFO", "teams not yet NCAA-tournament eligible: ", paste(sprintf("%d: %d", cov$season, cov$ineligible), collapse = ", "))
+  if (any(cov$conf_differs > 0)) say("WARN", "CBBD games and ESPN's membership disagree on a conference in ", paste(cov$season[cov$conf_differs > 0], collapse = ", "))
+  say("INFO", "venues recoded to a team's floor: ", sum(cov$site_recoded, na.rm = TRUE), " games; ESPN and CBBD neutral flags disagree on ",
+      sum(cov$neutral_disagree), " (tar_read(venues))")
+}
+
+# Every completed D1 game CBBD has is in the games table, and the player tables are filled
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = "data/cbb.duckdb", read_only = TRUE, shared_home = FALSE))
+tabs <- DBI::dbListTables(con)
+seasons <- DBI::dbGetQuery(con, "SELECT DISTINCT season FROM games ORDER BY season")$season
+miss <- vapply(seasons, function(s) {
+  cb <- cbbd_games(s)
+  have <- DBI::dbGetQuery(con, sprintf("SELECT game_id FROM games WHERE season = %d", s))$game_id
+  sum(cb$cbbd_status %in% "final" & !is.na(cb$home_conf) & !is.na(cb$away_conf) & !cb$game_id %in% have)
+}, integer(1))
+say(if (any(miss > 0)) "WARN" else "OK", "completed D1 games in CBBD missing from the games table: ",
+    if (any(miss > 0)) paste(sprintf("%d: %d", seasons[miss > 0], miss[miss > 0]), collapse = ", ") else "none")
+for (t in c("player_box", "rosters", "substitutions")) {
+  if (!t %in% tabs) { say("WARN", "no ", t, " table"); next }
+  n <- DBI::dbGetQuery(con, sprintf("SELECT season, COUNT(*) n FROM %s GROUP BY season ORDER BY season", t))
+  say("INFO", t, " rows: ", paste(sprintf("%d: %s", n$season, format(n$n, big.mark = ",", trim = TRUE)), collapse = ", "))
+}
+inj <- sort(Sys.glob(file.path("data", "raw", "espn", "injuries", "injuries_*.json")))
+if (!season_final(current_cbb_season())) {
+  last <- if (length(inj)) as.Date(sub(".*_([0-9]{8})\\.json$", "\\1", utils::tail(inj, 1)), "%Y%m%d") else as.Date(NA)
+  if (is.na(last) || Sys.Date() - last > 1) say("WARN", "injury report last archived ", format(last), " (scripts/poll_injuries.sh)")
+  if ("injuries" %in% tabs) say("INFO", sprintf("injury reports: %d days archived, %d player rows", length(inj),
+                                                DBI::dbGetQuery(con, "SELECT COUNT(*) n FROM injuries")$n))
+}
+DBI::dbDisconnect(con, shutdown = TRUE)
+
 # Backtest vs the closing line
 bt <- tryCatch(tar_read(backtest), error = \(e) NULL)
 if (!is.null(bt) && nrow(bt$overall) && bt$overall$games > 0) {
@@ -64,6 +97,47 @@ if (!is.null(bt) && nrow(bt$overall) && bt$overall$games > 0) {
                         v$games, v$mae, v$mae_torvik, v$mae_line, v$logloss, v$logloss_torvik))
     if (v$mae > v$mae_torvik) say("WARN", "model MAE worse than Torvik's")
   }
+  if (!is.null(o$mae_total) && is.finite(o$mae_total_on_lined)) {
+    say("INFO", sprintf("totals: MAE %.2f (closing total %.2f on the same games)", o$mae_total_on_lined, o$mae_total_line))
+    if (o$mae_total_on_lined - o$mae_total_line > 0.5) say("WARN", "total MAE more than 0.5 pts worse than the closing total")
+  }
+}
+
+# Shot model calibration (out of sample): a family off by more than 2 pp
+sc <- tryCatch(tar_read(shot_calibration), error = \(e) NULL)
+if (!is.null(sc) && nrow(sc)) {
+  off <- sc[abs(sc$diff) > 0.02 & sc$shots >= 2000, ]
+  say(if (nrow(off)) "WARN" else "OK", "shot model within 2 pp of the actual make rate by family and season",
+      if (nrow(off)) paste0(" except ", paste(sprintf("%d %s %+.1f", off$season, off$family, 100 * off$diff), collapse = ", ")) else "")
+}
+
+# Preseason priors: how many teams had our rating, Torvik's, and the roster regression
+if (!is.null(snaps)) {
+  src <- lapply(sort(unique(snaps$ratings$season)), function(s) {
+    a <- tryCatch(attr(tar_read_raw(paste0("prior_", s)), "sources"), error = \(e) NULL)
+    if (!is.null(a)) sprintf("%d: %s", s, paste(names(a), a, collapse = " "))
+  })
+  src <- unlist(src)
+  if (length(src)) say("INFO", "prior sources (teams): ", paste(src, collapse = "; "))
+}
+
+# Resume odds: per snapshot with a season simulation, P(field) sums to the field size and
+# P(auto bid) to the number of conferences
+if (!is.null(snaps) && !is.null(snaps$resume$p_field)) {
+  rs <- snaps$resume[!is.na(snaps$resume$p_field), ]
+  tot <- stats::aggregate(cbind(p_field, p_auto) ~ season + snap_date, rs, sum)
+  tot$field <- vapply(tot$season, field_size, integer(1))
+  bad <- abs(tot$p_field - tot$field) > 0.5
+  say(if (any(bad)) "FAIL" else "OK", sprintf("P(field) sums to the field size in %d of %d snapshots", sum(!bad), nrow(tot)))
+  if (any(bad)) print(utils::head(tot[bad, ], 10), row.names = FALSE)
+  say("INFO", sprintf("P(auto bid) per snapshot sums to %.1f-%.1f", min(tot$p_auto), max(tot$p_auto)))
+  if (any(rs$p_field < -1e-9 | rs$p_field > 1 + 1e-9)) say("FAIL", "P(field) outside [0, 1]")
+}
+
+# Dashboard rendered after the latest snapshot
+if (!is.null(snaps) && file.exists("docs/index.html")) {
+  age <- difftime(file.mtime("docs/index.html"), max(tar_meta(fields = time)$time, na.rm = TRUE), units = "mins")
+  say(if (age < -1) "WARN" else "OK", "docs/index.html ", if (age < -1) "is older than the last built target" else "is current")
 }
 
 if (fails > 0 && !interactive()) quit(status = 1)

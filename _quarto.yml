@@ -1,0 +1,7 @@
+project:
+  title: "CBB Bayesian Rankings"
+  type: default
+  execute-dir: project
+  render:
+    - "docs/dashboard.qmd"
+    - "docs/reports/*.qmd"

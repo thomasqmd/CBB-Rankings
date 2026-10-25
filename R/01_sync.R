@@ -3,12 +3,17 @@
 # season is replaced whole. A final season that synced after it ended is never touched again.
 #
 #   games       every game with a D1 team (completed and scheduled), see build_games()
+#   d1_teams    ESPN's D1 membership: team, conference (CBBD names), NCAA-tournament eligibility
 #   shots       field-goal attempts with shot-model features
 #   free_throws free-throw attempts (shooter, made, live play or not)
 #   game_live   share of regulation before garbage time
 #   torvik_pre  Torvik's preseason ratings (adj_em = adjoe - adjde, per 100)
 #   polls       AP and Coaches polls by release (rank NA = receiving votes), ESPN team ids
 #   champions   conference tournament champions (conf, game_date of the final, team_id)
+#   player_box  player box scores, every game with a D1 team (starter, minutes, did_not_play)
+#   rosters     ESPN season rosters (2024-25 on: class, height, weight, hometown)
+#   substitutions  players in and out, from play-by-play (part of 2024-25, then every game)
+#   injuries    ESPN's daily injury report, one row per day archived and player listed
 #   sync_meta   season, synced_at, final, prep_version (PREP_VERSION when synced)
 # ==============================================================================
 
@@ -21,7 +26,14 @@ db_replace_season <- function(con, table, df, season) {
   df$season <- rep(as.integer(season), nrow(df))
   if (DBI::dbExistsTable(con, table)) {
     DBI::dbExecute(con, sprintf("DELETE FROM %s WHERE season = %d", table, as.integer(season)))
-    DBI::dbAppendTable(con, table, df)
+    old <- DBI::dbListFields(con, table)
+    if (setequal(old, names(df))) {
+      DBI::dbAppendTable(con, table, df[old])
+    } else {
+      # columns changed (a new PREP_VERSION): rewrite the table, other seasons' rows padded with NA
+      rest <- DBI::dbReadTable(con, table)
+      DBI::dbWriteTable(con, table, dplyr::bind_rows(rest[intersect(names(rest), names(df))], df), overwrite = TRUE)
+    }
   } else {
     DBI::dbWriteTable(con, table, df)
   }
@@ -30,11 +42,20 @@ db_replace_season <- function(con, table, df, season) {
 
 sync_season <- function(con, season, today = Sys.Date()) {
   message("sync ", season_label(season))
-  files <- fetch_espn(season, c("schedule", "team_box", "pbp"))
+  files <- fetch_espn(season, c("schedule", "team_box", "player_box", "pbp", if (season >= ROSTERS_FROM) "rosters"))
   fetch_cbbd(season, today = today)
   games <- build_games(season)
   db_replace_season(con, "games", games, season)
 
+  gt <- team_conferences(games)
+  d1 <- d1_teams_table(season, fetch_espn_d1(season, today), gt[, c("team_id", "team")], gt)
+  nm <- rbind(data.frame(team_id = games$home_id, team = games$home), data.frame(team_id = games$away_id, team = games$away))
+  d1$team <- dplyr::coalesce(d1$team, nm$team[match(d1$team_id, nm$team_id)])
+  if (anyNA(d1$team)) d1$team[is.na(d1$team)] <- espn_team_name(season, d1$team_id[is.na(d1$team)])
+  db_replace_season(con, "d1_teams", d1, season)
+
+  if (!is.na(files[["player_box"]])) db_replace_season(con, "player_box", player_box_table(season, games$game_id), season)
+  if (!is.na(files["rosters"])) db_replace_season(con, "rosters", rosters_table(season), season)
   if (!is.na(files[["pbp"]])) {
     p <- annotate_plays(read_plays(season))
     p <- p[p$game_id %in% games$game_id, ]
@@ -42,6 +63,8 @@ sync_season <- function(con, season, today = Sys.Date()) {
     db_replace_season(con, "free_throws", ft_table(p), season)
     db_replace_season(con, "game_live", live_table(p), season)
     rm(p); gc()
+    subs <- read_subs(season)
+    db_replace_season(con, "substitutions", subs[subs$game_id %in% games$game_id, ], season)
   }
 
   opening <- suppressWarnings(min(games$game_date[games$season_type == "regular"], na.rm = TRUE))
@@ -66,11 +89,13 @@ sync_all <- function(seasons, db_path = "data/cbb.duckdb", today = Sys.Date()) {
   }
   sync_polls(con, seasons, today = today)     # left out of the fingerprint: these feed only polls_<s>
   sync_champions(con, seasons)                # and champs_<s>
+  if (!season_final(max(seasons), today)) sync_injuries(con, today)
   q <-function(sql) DBI::dbGetQuery(con, sprintf(sql, paste(seasons, collapse = ",")))
   fp <- q("SELECT season, COUNT(*) AS games, SUM(CASE WHEN played THEN 1 ELSE 0 END) AS played,
                   COUNT(spread) AS lines, MAX(CASE WHEN played THEN game_date END) AS last_played
            FROM games WHERE season IN (%s) GROUP BY season ORDER BY season")
   if (DBI::dbExistsTable(con, "shots")) fp <- merge(fp, q("SELECT season, COUNT(*) AS shots FROM shots WHERE season IN (%s) GROUP BY season"), all.x = TRUE)
+  if (DBI::dbExistsTable(con, "d1_teams")) fp <- merge(fp, q("SELECT season, COUNT(*) AS d1_teams, SUM(CASE WHEN eligible THEN 0 ELSE 1 END) AS ineligible FROM d1_teams WHERE season IN (%s) GROUP BY season"), all.x = TRUE)
   if (DBI::dbExistsTable(con, "torvik_pre")) fp <- merge(fp, q("SELECT season, COUNT(*) AS torvik_pre FROM torvik_pre WHERE season IN (%s) GROUP BY season"), all.x = TRUE)
   fp
 }
@@ -84,9 +109,23 @@ sync_polls <- function(con, seasons, today = Sys.Date()) {
   ids <- do.call(rbind, lapply(rev(seasons), \(s) cbbd_team_ids(s, games[[as.character(s)]])))
   ids <- ids[!duplicated(ids$cbbd_team_id), ]
   for (s in seasons) {
-    fetch_cbbd_rankings(s, today = today)
-    db_replace_season(con, "polls", cbbd_polls(s, games[[as.character(s)]], ids), s)
+    if (season_final(s, today)) {
+      fetch_cbbd_rankings(s, today = today)
+      db_replace_season(con, "polls", cbbd_polls(s, games[[as.character(s)]], ids), s)
+    } else {
+      fetch_espn_rankings(today)
+      p <- read_espn_rankings(Sys.glob(raw_path("espn", "rankings", "rankings_*.json")), s)
+      if (!is.null(p)) db_replace_season(con, "polls", p, s)
+    }
   }
+}
+
+# Today's injury report archived, then the injuries table rebuilt from every archived day (the
+# poller, scripts/poll_injuries.sh, archives the days no build runs)
+sync_injuries <- function(con, today = Sys.Date()) {
+  fetch_espn_injuries(today)
+  files <- sort(Sys.glob(raw_path("espn", "injuries", "injuries_*.json")))
+  DBI::dbWriteTable(con, "injuries", read_espn_injuries(files), overwrite = TRUE)
 }
 
 # Conference champions for every season, from the cached CBBD games files (no requests)
@@ -121,8 +160,10 @@ read_table_season <- function(con, table, season) {
 read_season <- function(season, db_path = "data/cbb.duckdb") {
   con <- db_connect(db_path, read_only = TRUE)
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-  out <- lapply(c(games = "games", shots = "shots", free_throws = "free_throws", game_live = "game_live",
-                  torvik_pre = "torvik_pre"), \(t) read_table_season(con, t, season))
+  out <- lapply(c(games = "games", d1_teams = "d1_teams", shots = "shots", free_throws = "free_throws",
+                  game_live = "game_live", torvik_pre = "torvik_pre"), \(t) read_table_season(con, t, season))
+  out$player_box <- if (DBI::dbExistsTable(con, "player_box"))
+    DBI::dbGetQuery(con, sprintf("SELECT game_id, team_id, athlete_id, did_not_play, minutes FROM player_box WHERE season = %d", as.integer(season)))
   out$season <- as.integer(season)
   out
 }

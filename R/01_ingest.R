@@ -6,10 +6,14 @@
 #   CBBD API (collegebasketballdata.com, CFBD_API_KEY, quota shared with CFB): games (ESPN id <->
 #     CBBD id, conferences, period scores, seeds, tournament) and closing lines. Responses are
 #     capped at 3,000 rows, so a season is fetched in date windows (4 calls per endpoint). In a
-#     live season only the windows covering the last LIVE_LOOKBACK days are refetched, at most
-#     once per MIN_REFRESH_HOURS.
+#     live season each window is fetched once (the schedule); after that one call per endpoint, at
+#     most once per MIN_REFRESH_HOURS, fetches the last LIVE_LOOKBACK days into a dated file that
+#     takes precedence over the windows (2 calls a day).
 #   Torvik (barttorvik.com, no key): preseason ratings (time machine, the day before opening
 #     night) for the carry-over prior; season-end team results as a benchmark.
+#   ESPN APIs (no key): D1 conference membership by season (core API), box scores of the few
+#     completed games missing from the bulk files (summary API), the daily injury report, and the
+#     live season's AP and Coaches polls (archived daily; CBBD's polls once a season is final).
 # ==============================================================================
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
@@ -19,8 +23,12 @@ ESPN_FILES <- c(
   schedule   = "espn_mens_college_basketball_schedules/mbb_schedule_%d.parquet",
   team_box   = "espn_mens_college_basketball_team_boxscores/team_box_%d.parquet",
   player_box = "espn_mens_college_basketball_player_boxscores/player_box_%d.parquet",
-  pbp        = "espn_mens_college_basketball_pbp/play_by_play_%d.parquet"
+  pbp        = "espn_mens_college_basketball_pbp/play_by_play_%d.parquet",
+  rosters    = "espn_mens_college_basketball_rosters/rosters_%d.parquet"     # 2025 on only
 )
+ROSTERS_FROM <- 2025L
+ESPN_CORE <- "https://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball"
+ESPN_SITE <- "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 CBBD_URL <- "https://api.collegebasketballdata.com"
 MIN_REFRESH_HOURS <- 20
 LIVE_LOOKBACK <- 10
@@ -62,8 +70,11 @@ cbbd_get <- function(endpoint, query) {
     httr2::req_auth_bearer_token(key) |>
     httr2::req_retry(max_tries = 3) |>
     httr2::req_perform()
-  message(sprintf("CBBD %s %s: %s calls left this month", endpoint, paste(unlist(query), collapse = " "),
-                  httr2::resp_header(resp, "x-calllimit-remaining")))
+  line <- sprintf("CBBD %s %s: %s calls left this month", endpoint, paste(unlist(query), collapse = " "),
+                  httr2::resp_header(resp, "x-calllimit-remaining"))
+  message(line)
+  # every call is logged, so scripts/daily_build.sh can count a build's calls (the quota is shared with CFBD)
+  try(cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S "), line, "\n", sep = "", file = "logs/cbbd_calls.log", append = TRUE), silent = TRUE)
   httr2::resp_body_string(resp)
 }
 
@@ -73,28 +84,34 @@ cbbd_windows <- function(season) {
   data.frame(start = b[-length(b)], end = b[-1])
 }
 
-# One JSON file per (endpoint, season, window). Final seasons: fetched once. Live season:
-# windows that have started are refetched when they overlap the last LIVE_LOOKBACK days and the
-# cached copy is older than MIN_REFRESH_HOURS; future windows are fetched once (the schedule).
+# One JSON file per (endpoint, season, window), fetched once. Live season: once the season has
+# started, one call per endpoint (when the newest recent file is older than MIN_REFRESH_HOURS)
+# fetches the last LIVE_LOOKBACK days into <ep>_<s>_rYYYYMMDD.json; read_cbbd() takes each game
+# from the newest file that has it.
 fetch_cbbd <- function(season, endpoint = c("games", "lines"), today = Sys.Date()) {
   dir.create(raw_path("cbbd"), recursive = TRUE, showWarnings = FALSE)
   live <- !season_final(season, today)
   w <- cbbd_windows(season)
+  get <- function(ep, from, to) {
+    txt <- cbbd_get(ep, list(season = season, startDateRange = format(from), endDateRange = format(to)))
+    if (length(jsonlite::fromJSON(txt, simplifyVector = FALSE)) >= 3000) stop(sprintf("%s %d %s to %s hit the 3,000-row cap; split it", ep, season, from, to))
+    txt
+  }
   unlist(lapply(endpoint, function(ep) {
     have <- Sys.glob(raw_path("cbbd", sprintf("%s_%d_*.json", ep, season)))
     if (!live && length(have)) return(have)       # a final season cached under any window scheme
-    vapply(seq_len(nrow(w)), function(i) {
+    win <- vapply(seq_len(nrow(w)), function(i) {
       dest <- raw_path("cbbd", sprintf("%s_%d_%d.json", ep, season, i))
-      recent <- live && w$start[i] <= today && w$end[i] >= today - LIVE_LOOKBACK
-      if (!file.exists(dest) || (recent && stale(dest))) {
-        txt <- cbbd_get(ep, list(season = season, startDateRange = format(w$start[i]),
-                                 endDateRange = format(w$end[i])))
-        n <- length(jsonlite::fromJSON(txt, simplifyVector = FALSE))
-        if (n >= 3000) stop(sprintf("%s %d window %d hit the 3,000-row cap; split it", ep, season, i))
-        writeLines(txt, dest)
-      }
+      if (!file.exists(dest)) writeLines(get(ep, w$start[i], w$end[i]), dest)
       dest
     }, character(1))
+    rec <- sort(Sys.glob(raw_path("cbbd", sprintf("%s_%d_r*.json", ep, season))))
+    if (live && today > w$start[1] && (!length(rec) || stale(utils::tail(rec, 1)))) {
+      dest <- raw_path("cbbd", sprintf("%s_%d_r%s.json", ep, season, format(today, "%Y%m%d")))
+      writeLines(get(ep, today - LIVE_LOOKBACK, today + 1), dest)
+      rec <- c(rec, dest)
+    }
+    c(rec, win)
   }))
 }
 
@@ -160,7 +177,9 @@ read_torvik_preseason <- function(files) {
 # ---- CBBD readers --------------------------------------------------------------
 
 read_cbbd <- function(season, endpoint) {
-  files <- sort(Sys.glob(raw_path("cbbd", sprintf("%s_%d_*.json", endpoint, season))))
+  files <- Sys.glob(raw_path("cbbd", sprintf("%s_%d_*.json", endpoint, season)))
+  rec <- grepl("_r[0-9]{8}\\.json$", files)
+  files <- c(sort(files[rec], decreasing = TRUE), sort(files[!rec]))     # newest recent file first
   rows <- unlist(lapply(files, \(f) jsonlite::fromJSON(f, simplifyVector = FALSE)), recursive = FALSE)
   if (!length(rows)) return(list())
   id <- vapply(rows, \(x) as.integer(x$id %||% x$gameId), integer(1))
@@ -174,7 +193,7 @@ cbbd_games <- function(season) {
   chr <- function(f) vapply(g, \(x) as.character(f(x) %||% NA_character_), character(1))
   int <- function(f) vapply(g, \(x) as.integer(f(x) %||% NA_integer_), integer(1))
   data.frame(
-    cbbd_id = int(\(x) x$id), game_id = int(\(x) x$sourceId),
+    cbbd_id = int(\(x) x$id), game_id = int(\(x) x$sourceId), cbbd_status = chr(\(x) x$status),
     season_type = chr(\(x) x$seasonType), tournament = chr(\(x) x$tournament), game_type = chr(\(x) x$gameType),
     home_conf = chr(\(x) x$homeConference), away_conf = chr(\(x) x$awayConference),
     cbbd_neutral = vapply(g, \(x) isTRUE(x$neutralSite), logical(1)),
@@ -218,13 +237,53 @@ torvik_team_ids <- function(torvik, teams, overrides = "data/torvik_names.csv") 
 
 # ---- Polls ------------------------------------------------------------------------
 
-# CBBD rankings (AP Top 25, Coaches Poll; one call returns the whole season). Final seasons:
-# fetched once. Live season: refetched once the cached copy is older than MIN_REFRESH_HOURS.
+# CBBD rankings (AP Top 25, Coaches Poll; one call returns the whole season), for final seasons
+# only: fetched once after the season ends (a copy from before then is replaced once). The live
+# season's polls come from ESPN (fetch_espn_rankings()).
 fetch_cbbd_rankings <- function(season, today = Sys.Date()) {
   dir.create(raw_path("cbbd"), recursive = TRUE, showWarnings = FALSE)
   dest <- raw_path("cbbd", sprintf("rankings_%d.json", season))
-  if (!file.exists(dest) || (!season_final(season, today) && stale(dest))) writeLines(cbbd_get("rankings", list(season = season)), dest)
+  end <- as.Date(sprintf("%d-05-01", season))
+  if (season_final(season, today) && (!file.exists(dest) || as.Date(file.mtime(dest)) < end)) writeLines(cbbd_get("rankings", list(season = season)), dest)
   dest
+}
+
+# ESPN's current AP and Coaches polls, archived once a day (data/raw/espn/rankings/)
+fetch_espn_rankings <- function(today = Sys.Date()) {
+  dir.create(raw_path("espn", "rankings"), recursive = TRUE, showWarnings = FALSE)
+  dest <- raw_path("espn", "rankings", sprintf("rankings_%s.json", format(today, "%Y%m%d")))
+  if (!file.exists(dest)) {
+    ok <- tryCatch({ utils::download.file(sprintf("%s/rankings", ESPN_SITE), dest, quiet = TRUE); TRUE }, error = \(e) FALSE)
+    if (!ok) unlink(dest)
+  }
+  if (file.exists(dest)) dest else NA_character_
+}
+
+# Archived ESPN polls for a season -> the polls table's columns (one row per poll, release, team;
+# rank NA = receiving votes); each release from the newest archive that has it
+read_espn_rankings <- function(files, season) {
+  rows <- lapply(sort(files, decreasing = TRUE), function(f) {
+    x <- jsonlite::fromJSON(f, simplifyVector = FALSE)
+    do.call(rbind, lapply(x$rankings, function(r) {
+      if (!identical(as.integer(r$season$year), as.integer(season))) return(NULL)
+      poll <- if (identical(r$type, "ap")) "AP" else if (identical(r$type, "usa")) "Coaches" else r$name
+      tm <- c(r$ranks, r$others)
+      if (!length(tm)) return(NULL)
+      data.frame(poll = poll, poll_date = as.Date(substr(r$date, 1, 10)), week = as.integer(r$occurrence$number),
+                 season_type = if (isTRUE(r$occurrence$last)) "postseason" else "regular",
+                 team_id = vapply(tm, \(t) as.integer(t$team$id), integer(1)), team = vapply(tm, \(t) t$team$location %||% NA_character_, character(1)),
+                 rank = vapply(tm, \(t) if (isTRUE(t$current > 0)) as.integer(t$current) else NA_integer_, integer(1)),
+                 points = vapply(tm, \(t) as.integer(t$points %||% NA), integer(1)),
+                 first_place = vapply(tm, \(t) as.integer(t$firstPlaceVotes %||% NA), integer(1)))
+    }))
+  })
+  out <- do.call(rbind, rows)
+  if (is.null(out)) return(NULL)
+  key <- paste(out$poll, out$week, out$season_type)
+  # every row of the newest archive per release
+  src <- rep(seq_along(rows), vapply(rows, \(r) if (is.null(r)) 0L else nrow(r), integer(1)))
+  best <- tapply(src, key, min)
+  out[src == best[key], ]
 }
 
 # CBBD team ids -> ESPN team ids, from the games both sources share (home with home, away with
@@ -295,4 +354,139 @@ cbbd_champions <- function(season, games) {
                     team_id = ifelse(m$home_won, m$home_id, m$away_id), notes = m$notes)
   out <- out[order(out$conf, out$game_date, decreasing = TRUE), ]
   out[!duplicated(out$conf), ]
+}
+
+# ---- D1 membership ----------------------------------------------------------------
+
+espn_json <- function(url) jsonlite::fromJSON(sub("^http:", "https:", url), simplifyVector = FALSE)
+
+# D1 conferences and their members for a season (ESPN core API, group 50 = Division I; one request
+# per conference). Final seasons are fetched once; the live season is refreshed when stale.
+fetch_espn_d1 <- function(season, today = Sys.Date()) {
+  dir.create(raw_path("espn"), recursive = TRUE, showWarnings = FALSE)
+  dest <- raw_path("espn", sprintf("d1_teams_%d.json", season))
+  if (file.exists(dest) && (season_final(season, today) || !stale(dest))) return(dest)
+  confs <- espn_json(sprintf("%s/seasons/%d/types/2/groups/50/children?limit=100", ESPN_CORE, season))$items
+  out <- do.call(rbind, lapply(confs, function(ref) {
+    g <- espn_json(ref[["$ref"]])
+    t <- espn_json(paste0(sub("\\?.*$", "", g$teams[["$ref"]]), "?limit=100"))$items
+    data.frame(espn_conf_id = as.integer(g$id), espn_conf = g$shortName %||% g$name,
+               team_id = vapply(t, \(i) as.integer(sub(".*/teams/([0-9]+).*", "\\1", i[["$ref"]])), integer(1)))
+  }))
+  if (is.null(out) || !nrow(out)) stop("ESPN lists no D1 teams for ", season_label(season))
+  jsonlite::write_json(out, dest)
+  dest
+}
+
+# Teams moving up to D1 are members (they play D1 schedules and count as D1 opponents) but cannot
+# play in the NCAA tournament until their reclassification ends: data/d1_transitions.csv lists
+# first_d1 and first_eligible seasons for every transition that overlaps 2014 on.
+read_transitions <- function(path = "data/d1_transitions.csv") {
+  if (!file.exists(path)) return(data.frame(team_id = integer(), first_d1 = integer(), first_eligible = integer()))
+  utils::read.csv(path, stringsAsFactors = FALSE)
+}
+
+# A season's D1 teams: ESPN's membership with CBBD's conference names (each ESPN conference takes
+# the name most of its teams carry in this season's CBBD games, so names match the champions
+# table; ESPN's own short name where no game says), the team name most used in this season's
+# games, and NCAA-tournament eligibility. names: data.frame(team_id, team) from the season's games.
+d1_teams_table <- function(season, file, names, games_conf, transitions = read_transitions()) {
+  m <- jsonlite::fromJSON(file)
+  m <- m[!duplicated(m$team_id), ]
+  gc <- games_conf[match(m$team_id, games_conf$team_id), "conf"]
+  vote <- stats::aggregate(gc, list(id = m$espn_conf_id), \(x) { x <- stats::na.omit(x); if (length(x)) names(which.max(table(x))) else NA_character_ })
+  fixed <- c("Atlantic Sun" = "ASUN")                        # the one name the two sources spell differently
+  conf <- vote$x[match(m$espn_conf_id, vote$id)]
+  conf <- dplyr::coalesce(conf, unname(fixed[m$espn_conf]), m$espn_conf)
+  tr <- transitions[match(m$team_id, transitions$team_id), ]
+  data.frame(team_id = m$team_id, team = names$team[match(m$team_id, names$team_id)], conf = conf,
+             espn_conf = m$espn_conf, eligible = is.na(tr$first_eligible) | season >= tr$first_eligible)
+}
+
+# Display name for teams with no game yet this season (ESPN core API, one request per team)
+espn_team_name <- function(season, team_id) {
+  vapply(team_id, \(id) tryCatch(espn_json(sprintf("%s/seasons/%d/teams/%d", ESPN_CORE, season, id))$location,
+                                 error = \(e) NA_character_), character(1))
+}
+
+# ---- Completed games missing from the ESPN bulk files -------------------------------
+
+# A few completed games are in CBBD (with their ESPN id) but not in ESPN's bulk schedule, box score
+# or play-by-play files (2015-11-20 and 2017-03-13/14, a lagging live day). Their box score comes
+# from the ESPN summary API, one cached request per game; no play-by-play, so no efficiency signal.
+fetch_espn_summary <- function(game_id) {
+  dir.create(raw_path("espn", "summary"), recursive = TRUE, showWarnings = FALSE)
+  dest <- raw_path("espn", "summary", sprintf("%d.json", game_id))
+  if (!file.exists(dest)) {
+    ok <- tryCatch({ utils::download.file(sprintf("%s/summary?event=%d", ESPN_SITE, game_id), dest, quiet = TRUE); TRUE },
+                   error = \(e) FALSE)
+    if (!ok) { unlink(dest); return(NA_character_) }
+  }
+  dest
+}
+
+# Summary files -> rows shaped like the schedule query in build_games(), with box-score possessions
+read_espn_summaries <- function(files) {
+  rows <- lapply(stats::na.omit(files), function(f) {
+    x <- jsonlite::fromJSON(f, simplifyVector = FALSE)
+    comp <- x$header$competitions[[1]]
+    side <- function(ha) Filter(\(t) identical(t$homeAway, ha), comp$competitors)[[1]]
+    h <- side("home"); a <- side("away")
+    stat <- function(t, nm) {
+      s <- Filter(\(z) identical(z$name, nm), t$statistics)
+      if (length(s)) s[[1]]$displayValue else NA_character_
+    }
+    poss <- vapply(x$boxscore$teams, function(t) {
+      att <- \(nm) as.numeric(sub(".*-", "", stat(t, nm)))
+      att("fieldGoalsMade-fieldGoalsAttempted") - as.numeric(stat(t, "offensiveRebounds")) +
+        as.numeric(stat(t, "totalTurnovers")) + 0.475 * att("freeThrowsMade-freeThrowsAttempted")
+    }, numeric(1))
+    v <- x$gameInfo$venue
+    data.frame(game_id = as.integer(comp$id),
+               game_date = as.Date(as.POSIXct(comp$date, format = "%Y-%m-%dT%H:%MZ", tz = "UTC"), tz = "America/New_York"),
+               neutral_site = isTRUE(comp$neutralSite), venue_id = as.integer(v$id %||% NA), venue = v$fullName %||% NA_character_,
+               city = v$address$city %||% NA_character_, state = v$address$state %||% NA_character_,
+               home_id = as.integer(h$id), home = h$team$location, away_id = as.integer(a$id), away = a$team$location,
+               home_score = as.integer(h$score), away_score = as.integer(a$score),
+               completed = isTRUE(comp$status$type$completed), poss = if (length(poss) == 2) mean(poss) else NA_real_)
+  })
+  do.call(rbind, rows)
+}
+
+# ---- Injuries ----------------------------------------------------------------------
+
+# ESPN's injury report has no history: one copy is archived per day the poller or a build runs
+# (data/raw/espn/injuries/injuries_YYYYMMDD.json). Empty in the preseason.
+fetch_espn_injuries <- function(today = Sys.Date()) {
+  dir.create(raw_path("espn", "injuries"), recursive = TRUE, showWarnings = FALSE)
+  dest <- raw_path("espn", "injuries", sprintf("injuries_%s.json", format(today, "%Y%m%d")))
+  if (!file.exists(dest)) {
+    ok <- tryCatch({ utils::download.file(sprintf("%s/injuries", ESPN_SITE), dest, quiet = TRUE); TRUE }, error = \(e) FALSE)
+    if (!ok) unlink(dest)
+  }
+  if (file.exists(dest)) dest else NA_character_
+}
+
+# Archived injury files -> one row per (report date, player listed)
+read_espn_injuries <- function(files) {
+  empty <- data.frame(report_date = as.Date(character()), team_id = integer(), athlete_id = integer(), athlete = character(),
+                      status = character(), type = character(), detail = character(), return_date = as.Date(character()),
+                      updated = as.POSIXct(character()), comment = character())
+  rows <- lapply(files, function(f) {
+    x <- jsonlite::fromJSON(f, simplifyVector = FALSE)
+    d <- as.Date(sub(".*injuries_([0-9]{8}).*", "\\1", f), "%Y%m%d")
+    inj <- unlist(lapply(x$injuries, \(team) lapply(team$injuries, \(i) c(i, list(list_team = team$id)))), recursive = FALSE)
+    do.call(rbind, lapply(inj, function(i) {
+      a <- i$athlete
+      href <- vapply(a$links %||% list(), \(l) l$href %||% "", character(1))
+      id <- suppressWarnings(as.integer(sub(".*/id/([0-9]+).*", "\\1", grep("/id/[0-9]+", href, value = TRUE)[1])))
+      data.frame(report_date = d, team_id = as.integer(a$team$id %||% i$list_team), athlete_id = id,
+                 athlete = a$displayName %||% NA_character_, status = i$status %||% NA_character_,
+                 type = i$details$type %||% NA_character_, detail = i$details$detail %||% NA_character_,
+                 return_date = as.Date(i$details$returnDate %||% NA_character_),
+                 updated = as.POSIXct(i$date %||% NA_character_, format = "%Y-%m-%dT%H:%MZ", tz = "UTC"),
+                 comment = i$shortComment %||% NA_character_)
+    }))
+  })
+  rbind(empty, do.call(rbind, rows))
 }
