@@ -97,6 +97,14 @@ if (!is.null(bt) && nrow(bt$overall) && bt$overall$games > 0) {
                         v$games, v$mae, v$mae_torvik, v$mae_line, v$logloss, v$logloss_torvik))
     if (v$mae > v$mae_torvik) say("WARN", "model MAE worse than Torvik's")
   }
+  l <- bt$vs_line
+  if (!is.null(l) && nrow(l) && l$games > 0) {
+    say("INFO", sprintf("vs the line (%d games): MAE %.3f / %.3f, Brier %.4f / %.4f, log loss %.4f / %.4f, CRPS %.3f / %.3f; 80%% interval coverage %.1f%%",
+                        l$games, l$mae, l$mae_line, l$brier, l$brier_line, l$logloss, l$logloss_line, l$crps, l$crps_line, 100 * o$cov80))
+    if (abs(o$cov80 - 0.8) > 0.03) say("WARN", "80% predictive intervals off nominal by more than 3 pp")
+    e <- bt$ats_edge
+    if (!is.null(e)) say("INFO", paste0("ATS by |model - line|: ", paste(sprintf("%s %s %.1f%% (%d)", e$period, e$edge, 100 * e$ats, e$games), collapse = ", ")))
+  }
   if (!is.null(o$mae_total) && is.finite(o$mae_total_on_lined)) {
     say("INFO", sprintf("totals: MAE %.2f (closing total %.2f on the same games)", o$mae_total_on_lined, o$mae_total_line))
     if (o$mae_total_on_lined - o$mae_total_line > 0.5) say("WARN", "total MAE more than 0.5 pts worse than the closing total")

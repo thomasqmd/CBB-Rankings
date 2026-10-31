@@ -3,8 +3,9 @@
 Status: pilot completed 2026-10-23 on 2025-26 (prior from 2024-25). Full 2014–2027 pipeline
 built and backtested 2026-10-24; Phase 1 (ingest) complete and rebuilt the same day (backtest
 unchanged: MAE 8.87, log loss 0.5259). Phases 2–6 coded and tested the same day; model defaults
-re-chosen by the variant backtest (`pilot/out/12_variants.md`). The full rebuild under them is
-pending (`todo.md`, Up next).
+re-chosen by the variant backtest (`pilot/out/12_variants.md`). Full rebuild under them
+2026-10-25 (no errors, 274 / 277 snapshots pass the gates): backtest MAE 8.80, log loss 0.5230;
+on games with a line 8.81 vs the line's 8.75.
 Design source: the doc "CBB Rankings: Plan & Public Data Sources"
 (<https://claude.ai/artifact/EDkNP5Qx1V8eWT13XRVtbS>); this file supersedes it where they
 disagree (section B).
@@ -181,7 +182,8 @@ look like home games but are too few to say. Pool across seasons before modellin
 - Exhibitions: excluded (A9).
 - **Tempo/total submodel** (done; `tempo_model()`): ridge team pace and total-points effects with
   carry-over, so spreads and totals come from the model. Possessions MAE 3.68 / 4.02 (Jan–Apr /
-  Nov–Dec), totals 13.3 / 13.6 vs the closing total's 13.1 / 13.2.
+  Nov–Dec); totals MAE 13.36 vs the closing total's 13.13 since the 2026-10-30 carry-over fix,
+  recency weights and λ_t 3 (`pilot/out/15_totals.md`).
 - **HCA**: one per season, prior N(4.5, 0.4) pooled from the final fits; 2020-21 N(3, 0.5).
   Team-level HCA tested, no gain.
 - **OT**: a tie; OT margin at weight 0.5 or 1 tested, no gain.
@@ -210,7 +212,7 @@ look like home games but are too few to say. Pool across seasons before modellin
 
 ### C3. Resume
 - WAB per draw against the last team in (moving benchmark, done), 76-team field from 2027.
-- Validation 2016–2026: 33.3 of 36.3 at-large teams on average, below the 35 / 37 exit check;
+- Validation 2016–2026: 33.5 of 36.3 at-large teams on average, below the 35 / 37 exit check;
   quadrant features don't close the gap without NET (`pilot/out/14_resume_validation.md`).
 - P(at-large) needs automatic bids. In season, simulate conference tournaments from the power
   posterior (CFB `08_season_sim.R` pattern) so P(auto bid) and P(at-large) are joint.
@@ -255,10 +257,10 @@ sync (ESPN bulk + CBBD games/lines + Torvik → data/raw → data/cbb.duckdb)
 | 5. Resume | WAB, bubble calibration, conference-tournament sim, team sheet | ≥ 35/37 at-large overlap on average 2016–2026 |
 | 6. Live + dashboard | Daily `targets` run, Quarto dashboard, reports | Daily build < 10 min, ≤ 2 CBBD calls |
 
-Status 2026-10-24: 1 done. 2 done (shot calibration within ±0.6 pp for threes, possessions
-within ~1%). 3 done in code; the rebuild decides the line check (Phase 1: 8.91 vs the line's 8.79 on the
-games with a line, gap 0.12). 4 done (roster prior adopted; Nov–Dec improves in the variant backtest). 5 done; exit check not met (33.3 / 36.3).
-6 built (dashboard, reports, daily script); measured once the season starts.
+Status 2026-10-30: 1 done. 2 done (shot calibration within ±0.6 pp for threes, possessions
+within ~1%). 3 done: within 0.1 of the line (8.81 vs 8.75 on games with a line, gap 0.06; was 0.12
+in Phase 1). 4 done: Nov–Dec MAE 9.325 → 9.165 on the games with Torvik and a line. 5 done; exit
+check not met (33.5 / 36.3). 6 built (dashboard, reports, daily script); measured once the season starts.
 
 ## F. Dashboard
 

@@ -75,8 +75,8 @@ htl.html`<div>${themeButton}</div>`
 ```{=html}
 <div class="nameplate">
   <div class="np-ear">
-    <div class="eb" style="color:var(--res-t)">Resume · what was earned</div>
-    Wins beyond what the last team into the NCAA field would have managed with the same schedule (Wins Above Bubble).
+    <div class="eb" style="color:var(--res-t)">Resume</div>
+    Wins beyond the last team into the NCAA field with the same schedule<br>(Wins Above Bubble)
   </div>
   <a class="np-center" href="#rankings">
     <span class="np-title">
@@ -84,11 +84,11 @@ htl.html`<div>${themeButton}</div>`
       <img class="logo-mark dark" src="logos/TRlogo-dark.svg" width="64" height="64" alt="">
       <span class="disp">CBB Rankings</span>
     </span>
-    <span class="np-tag">Bayesian resume and power ratings for men's college basketball</span>
+    <span class="np-tag">Bayesian resume rankings and power ratings</span>
   </a>
   <div class="np-ear right">
-    <div class="eb" style="color:var(--pow-t)">Power · how good</div>
-    Points per 100 possessions better than an average Division I team on a neutral floor.
+    <div class="eb" style="color:var(--pow-t)">Power</div>
+    Points per 100 possessions better than average D1 team on a neutral floor; A − B is the margin per 100.
   </div>
 </div>
 ```
@@ -133,13 +133,16 @@ viewof confPick = Inputs.select(confKeys(d1), { label: "Conference", format: con
 viewof search = Inputs.text({ type: "search", placeholder: "e.g. Gonzaga", label: "Find a team" })
 ```
 :::
-::: {.ctl-row .ctl .seg style="padding-bottom:14px"}
+::: {.ctl-row .ctl .seg .spread style="padding-bottom:14px"}
 ```{ojs}
 viewof sortKey = Inputs.radio(new Map(SORTS.map(s => [s.label, s.key])), { label: "Rank by", value: hasResume ? "resume" : "power" })
 ```
+```{ojs}
+viewof rankView = Inputs.radio(["Table", "Rank chart"], { label: "View", value: "Table" })
+```
 :::
 ```{ojs}
-htl.html`<div>${rankingsTable}</div>`
+htl.html`<div>${rankView === "Rank chart" ? rankChart : rankingsTable}</div>`
 ```
 :::
 ::::
@@ -533,14 +536,14 @@ rankingsHeadline = {
 briefs = {
   const brief = (label, color, d, s) => htl.html`<div class="brief">${eyebrow(label, color)}
     <div class="who">${logo(d.id, 34)}<span class="disp">${d.team}</span></div><div class="s">${s}</div></div>`
-  if (!hasResume) return htl.html`<section class="briefs"><div>${brief("No. 1 Power", "var(--pow-t)", byPow[0], htl.html`<strong>${fmtSigned(byPow[0].pw)}</strong> per 100 · preseason rating`)}</div></section>`
+  if (!hasResume) return htl.html`<section class="briefs"><div>${brief("Top power rating", "var(--pow-t)", byPow[0], htl.html`<strong>${fmtSigned(byPow[0].pw)}</strong> per 100 · preseason rating`)}</div></section>`
   const r1 = byRes[0], p1 = byPow[0]
   const rise = byRes.slice(0, 25).filter(d => prevRows.get(d.id)?.rrk != null).map(d => ({ d, m: prevRows.get(d.id).rrk - d.rrk })).sort((a, b) => b.m - a.m)[0]
   const was = prevRows.get(r1.id)?.rrk
   const bub = hasOdds ? d1.filter(d => d.elig && (d.p_auto ?? 0) < 0.5).sort((a, b) => Math.abs((a.p_field ?? 0) - 0.5) - Math.abs((b.p_field ?? 0) - 0.5))[0] : null
   return htl.html`<section class="briefs" aria-label="At a glance"><div>
     ${brief("No. 1 Resume", "var(--res-t)", r1, htl.html`<strong>${fmtSigned(r1.wab, 2)} WAB</strong> · ${r1.wins}–${r1.losses} · ${was == null ? "first ranking" : was === 1 ? "No. 1 again" : `up from #${was}`}`)}
-    ${brief("No. 1 Power", "var(--pow-t)", p1, htl.html`<strong>${fmtSigned(p1.pw)}</strong> per 100 · ${p1.wins}–${p1.losses} · ${p1.rrk === 1 ? "also No. 1 on resume" : `#${p1.rrk} on resume`}`)}
+    ${brief("Top power rating", "var(--pow-t)", p1, htl.html`<strong>${fmtSigned(p1.pw)}</strong> per 100 · ${p1.wins}–${p1.losses} · ${p1.rrk === 1 ? "also No. 1 on resume" : `#${p1.rrk} on resume`}`)}
     ${rise && rise.m > 0 ? brief("Biggest riser", "var(--ink-3)", rise.d, htl.html`<strong class="up">▲ ${rise.m}</strong> · #${rise.d.rrk + rise.m} → #${rise.d.rrk} on resume`) : ""}
     ${bub ? brief("On the bubble", "var(--ink-3)", bub, htl.html`<strong>${fmtPct(bub.p_field)}</strong> to make the field · ${bub.wins}–${bub.losses} · WAB ${fmtSigned(bub.wab, 2)}`) : ""}
   </div></section>`
@@ -554,7 +557,7 @@ rankingsTable = {
   const wDom = [Math.min(-12, d3.min(d1, d => d.wab_lo) ?? -12), Math.max(4, d3.max(d1, d => d.wab_hi) ?? 4)]
   const pDom = d3.extent(d1.flatMap(d => [d.pw_lo, d.pw_hi]))
   const hc = k => sort.key === k ? "var(--navy)" : "var(--ink-3)"
-  const rng = (lo, hi) => lo == null || lo === hi ? "" : htl.html`<div class="note" style="font-size:11px;font-weight:400;line-height:1.1">${lo}–${hi}</div>`
+  const rng = (lo, hi) => lo == null || lo === hi ? "" : htl.html`<div class="note" style="font-size:12px;font-weight:400;line-height:1.1">${lo}–${hi}</div>`
   const showCut = sort.key === "resume" && confPick === "all" && !q && hasResume
   const cutAfter = showCut ? rows.filter(d => d.wab > 0).at(-1)?.id : null
   const row = d => {
@@ -564,7 +567,7 @@ rankingsTable = {
       <div class="stick s2" role="cell">${sort.prev ? move(now, before) : ""}</div>
       <div class="stick s3" role="cell">${logo(d.id, 30)}<span class="tc-t">${teamLink(d)}<span class="tc-s">${d.conf}${d.elig ? "" : " · ineligible"}</span></span></div>
       <div class="c r" role="cell">${d.wins ?? 0}–${d.losses ?? 0}</div>
-      <div class="rk-val" role="cell">${hasResume ? htl.html`<span class="res-t">${fmtSigned(d.wab, 2)}</span>${ibar(d.wab, d.wab_lo, d.wab_hi, wDom, "var(--res)")}` : htl.html`<span class="muted">–</span>`}</div>
+      <div class="rk-val" role="cell">${hasResume ? [htl.html`<span class="res-t">${fmtSigned(d.wab, 2)}</span>`, ibar(d.wab, d.wab_lo, d.wab_hi, wDom, "var(--res)")] : htl.html`<span class="muted">–</span>`}</div>
       <div class="c b r" role="cell">${d.rrk ?? "–"}${rng(d.rrk_lo, d.rrk_hi)}</div>
       <div class="c r" role="cell" title=${d.p_auto != null ? `Automatic bid ${fmtPct(d.p_auto)} · at-large ${fmtPct(d.p_al)}` : ""}>${hasOdds ? fmtPct(d.p_field) : "–"}</div>
       <div class="rk-val" role="cell"><span class="pow-t">${fmtSigned(d.pw)}</span>${ibar(d.pw, d.pw_lo, d.pw_hi, pDom, "var(--pow)")}</div>
@@ -609,6 +612,89 @@ rankingsTable = {
 }
 ```
 
+```{ojs}
+//| output: false
+// Rank chart: every team's resume rank and power-rating rank as a dumbbell on one 1–N axis, with
+// offense (sword) and defense (shield) as a smaller dumbbell underneath. Same sort and filters as
+// the table. The shaded band is the top of the resume ranking down to the bubble (the benchmark's rank).
+rankChart = {
+  const sort = SORTS.find(s => s.key === sortKey) ?? SORTS[0]
+  const q = search.trim().toLowerCase()
+  const val = d => d[sort.col] ?? 9999
+  const rows = d1.filter(d => inConf(d, confPick) && (!q || d.team.toLowerCase().includes(q)))
+    .sort((a, b) => val(a) - val(b) || (a.rrk ?? a.prk) - (b.rrk ?? b.prk))
+  const n = d1.length
+  const x = r => r == null ? null : (r - 1) / (n - 1) * 100
+  const pc = v => `${v.toFixed(2)}%`
+  const bench = Math.round(snap.bench_rank ?? (snap.field - 31))
+  // The sword and shield are 14px wide. Estimate the track's width (it matches the CSS grid below)
+  // so icons closer than that can be pushed apart, the better rank to the left
+  const phone = width <= 520
+  const box = Math.max(phone ? 900 : 1180, Math.min(width, 1280) - (width <= 820 ? 32 : 64))
+  const fixed = phone ? 28 + 110 + 50 + 44 + 26 * 3 + 7 * 6 + 8 + 16 : 40 + 210 + 56 + 52 + 40 * 2 + 36 + 7 * 12 + 12 + 16
+  const ppr = (box - fixed) / (n - 1)
+  const nudge = (o, e) => {
+    const p = Math.max(0, (15 - Math.abs(o - e) * ppr) / 2), s = o <= e ? -1 : 1
+    return [-7 + s * p, -7 - s * p]
+  }
+  const sword = (v, m) => htl.svg`<svg class="rc-ico" viewBox="0 0 24 24" aria-hidden="true" style=${{ left: pc(v), marginLeft: `${m.toFixed(1)}px` }}>
+    <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/></svg>`
+  const shield = (v, m) => htl.svg`<svg class="rc-ico def" viewBox="0 0 24 24" aria-hidden="true" style=${{ left: pc(v), marginLeft: `${m.toFixed(1)}px` }}>
+    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`
+  const span = (a, b) => ({ left: pc(Math.min(a, b)), width: pc(Math.abs(a - b)) })
+  const row = d => {
+    const r = x(d.rrk), p = x(d.prk), o = x(d.off_rk), e = x(d.def_rk)
+    const [om, em] = o != null && e != null ? nudge(d.off_rk, d.def_rk) : [-7, -7]
+    return htl.html`<div class="rc-row" role="row">
+      <div class="stick s1 rk-num" role="cell">${d[sort.col] ?? "–"}</div>
+      <div class="stick s3" role="cell">${logo(d.id, 30)}<span class="tc-t">${teamLink(d)}</span></div>
+      <div class="rc-track" role="cell" aria-label=${`Resume rank ${d.rrk ?? "–"}, power rating rank ${d.prk}, offense ${d.off_rk ?? "–"}, defense ${d.def_rk ?? "–"}`}>
+        <span class="rc-band"></span>
+        ${r != null ? htl.html`<span class="rc-bar" style=${span(r, p)}></span>` : ""}
+        ${o != null ? htl.html`<span class="rc-tick" style=${{ left: pc(p) }}></span>` : ""}
+        ${o != null && e != null ? htl.html`<span class="rc-sub" style=${span(o, e)}></span>` : ""}
+        ${o != null ? sword(o, om) : ""}${e != null ? shield(e, em) : ""}
+        ${r != null ? htl.html`<span class="rc-dot res" style=${{ left: pc(r) }}></span>` : ""}
+        <span class="rc-dot pow" style=${{ left: pc(p) }}></span>
+      </div>
+      <div class="c b r res-t" role="cell">${d.rrk ?? "–"}</div>
+      <div class="c b r pow-t" role="cell">${d.prk}</div>
+      <div class="c r" role="cell">${d.off_rk ?? "–"}</div>
+      <div class="c r" role="cell">${d.def_rk ?? "–"}</div>
+      <div class="c r" role="cell">${d.ap ?? "–"}</div>
+    </div>`
+  }
+  const ticks = [1, 50, 100, 150, 200, 250, 300, n]
+  const sw = htl.svg`<svg class="rc-key-ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/></svg>`
+  const sh = htl.svg`<svg class="rc-key-ico def" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`
+  return htl.html`<div>
+    <div class="rk-box"><div class="rc" role="table" aria-labelledby="d1-title" style=${{ "--band": pc((bench - 0.5) / (n - 1) * 100) }}>
+      <div class="rc-row rc-head" role="row">
+        <div class="stick s1" role="columnheader">#</div>
+        <div class="stick s3" role="columnheader">Team</div>
+        <div class="rc-axis" role="columnheader"><span class="sr-only">Resume rank and power-rating rank, 1 to ${n}</span>
+          ${ticks.map(t => htl.html`<span aria-hidden="true" style=${{ left: pc(x(t)) }}>${t}</span>`)}</div>
+        <div class="r res-t" role="columnheader">Resume</div>
+        <div class="r pow-t" role="columnheader">Power</div>
+        <div class="r" role="columnheader">Off</div>
+        <div class="r" role="columnheader">Def</div>
+        <div class="r" role="columnheader">AP</div>
+      </div>
+      <div class="rc-body">${rows.map(row)}</div>
+      ${rows.length ? "" : htl.html`<div style="padding:40px 24px;text-align:center;color:var(--ink-2)">No teams match. Try a shorter name or pick All D1.</div>`}
+    </div></div>
+    <div class="rk-foot">
+      <span>${snap.passed ? "✓ Model converged" : "⚠ Convergence checks failed"} · home court ${fmtSigned(snap.hca)} pts</span>
+      <span class="key">
+        ${hasResume ? htl.html`<span><span class="dot" style="background:var(--res)"></span>Resume rank</span>` : ""}
+        <span><span class="dot" style="background:var(--pow)"></span>Power rating, ranked</span>
+        <span>${sw}Offense</span><span>${sh}Defense</span>
+        <span><span class="rc-key-band"></span>Top ${bench} (the bubble)</span>
+      </span>
+    </div></div>`
+}
+```
+
 <!-- ---- Team ---- -->
 
 ```{ojs}
@@ -626,7 +712,7 @@ teamBody = {
   const hist = histOf(tRow.id).filter(d => d.rrk != null)
   const mini = hist.length < 2 ? "" : Plot.plot({
     width: 320, height: 230, marginLeft: 34, marginRight: 16, marginTop: 12, marginBottom: 26,
-    style: { background: "transparent", fontSize: "11px" },
+    style: { background: "transparent", fontSize: "12px" },
     x: { label: null, ticks: [], tickFormat: () => "" },
     y: { reverse: true, domain: [1, Math.max(60, d3.max(hist, d => Math.max(d.rrk, d.prk)) + 2)], ticks: [1, 25, 50, 100, 200, 300].filter(t => t <= Math.max(60, d3.max(hist, d => Math.max(d.rrk, d.prk)) + 2)), label: null, grid: true },
     marks: [
@@ -651,7 +737,7 @@ teamBody = {
     const mm = played ? g.pre_margin : g.fut_margin, wp = played ? g.pre_wp : g.fut_wp
     return htl.html`<tr>
       <td class="muted" style="width:70px">${dayFmt(g.date).replace(/^\w+, /, "")}</td>
-      <td>${teamCell(o, `${g.venue === "A" ? "Away" : g.venue === "N" ? "Neutral" : "Home"}${o.prk ? ` · Power #${o.prk}` : ""}${g.tourn ? ` · ${g.tourn}` : ""}`, 28)}</td>
+      <td>${teamCell(o, `${g.venue === "A" ? "Away" : g.venue === "N" ? "Neutral" : "Home"}${o.prk ? ` (${o.rrk ?? "–"}/${o.prk})` : " · non-D1"}${g.tourn ? ` · ${g.tourn}` : ""}`, 28)}</td>
       <td>${played ? htl.html`<strong class=${win ? "up" : "down"}>${win ? "W" : "L"} ${g.pts}–${g.opp_pts}${g.ot ? " OT" : ""}</strong>${g.missing >= 0.1 ? htl.html` <span class="note" title="Share of usual minutes missing">· short ${Math.round(g.missing * 100)}%</span>` : ""}` : htl.html`<span class="muted">to play</span>`}</td>
       <td class="n">${mm == null ? "–" : fmtSigned(mm)}</td>
       <td class="n muted hide-sm">${g.line == null ? "–" : fmtSigned(g.line)}</td>
@@ -672,11 +758,11 @@ teamBody = {
       ${sheet}
       ${mini ? htl.html`<div style="padding-top:22px;margin-top:18px;border-top:1px solid var(--rule)">
         <div style="display:flex;justify-content:space-between;align-items:baseline">${eyebrow("Rank by snapshot", "var(--ink-3)")}
-          <span style="display:flex;gap:12px;font-size:12px;font-weight:700"><span class="res-t">Resume #${tRow.rrk}</span><span class="pow-t">Power #${tRow.prk}</span></span></div>${mini}</div>` : ""}
+          <span style="display:flex;gap:12px;font-size:13px;font-weight:700"><span class="res-t">Resume #${tRow.rrk}</span><span class="pow-t">Power #${tRow.prk}</span></span></div>${mini}</div>` : ""}
     </aside>
     <section style="min-width:0">
       ${secH("Schedule", htl.html`<span class="note">Model and Vegas: ${tRow.team}'s expected margin before tip-off</span>`)}
-      <div class="tbl-wrap"><table class="t"><thead><tr><th>Date</th><th>Opponent</th><th>Result</th><th class="n pow-t">Model</th><th class="n hide-sm">Vegas</th><th class="hide-xs">Win chance</th><th class="n res-t">Resume ±</th></tr></thead>
+      <div class="tbl-wrap"><table class="t"><thead><tr><th>Date</th><th>Opponent<br><span style="font-weight:400">(resume/power)</span></th><th>Result</th><th class="n pow-t">Model</th><th class="n hide-sm">Vegas</th><th class="hide-xs">Win chance</th><th class="n res-t">Resume ±</th></tr></thead>
       <tbody>${played.map(tr)}${left.length ? htl.html`<tr class="grp"><td colspan="7"><span class="eb" style="color:var(--ink-3)">After this snapshot</span></td></tr>` : ""}${left.map(tr)}</tbody></table></div>
       <p class="note">Resume ± is what each result earned against the last team into the field (latest ratings). "Short" marks games played without rotation players (share of usual minutes missing), known only afterwards.</p>
     </section></div>`
@@ -725,9 +811,9 @@ matchupBody = {
   const xs = d3.range(-lim, lim + 0.5, 0.5).map(x => ({ x, y: Math.exp(-0.5 * ((x - m.mean) / m.sd) ** 2) / (m.sd * Math.sqrt(2 * Math.PI)) }))
   const ymax = d3.max(xs, d => d.y)
   const chart = Plot.plot({
-    width: Math.min(width, 1216), height: 300, marginLeft: 30, marginRight: 30,
-    style: { background: "transparent", fontSize: "12px" },
-    x: { label: `${a.team} margin (points) →`, domain: [-lim, lim] }, y: { axis: null, domain: [0, ymax * 1.15] },
+    width: Math.min(width, 1216), height: 320, marginLeft: 30, marginRight: 30, marginBottom: 50,
+    style: { background: "transparent", fontSize: "13px" },
+    x: { label: `${a.team} margin (points) →`, labelAnchor: "center", labelOffset: 44, domain: [-lim, lim] }, y: { axis: null, domain: [0, ymax * 1.15] },
     marks: [
       Plot.areaY(xs.filter(d => d.x >= 0), { x: "x", y: "y", fill: "var(--pow)", fillOpacity: 0.28 }),
       Plot.areaY(xs.filter(d => d.x <= 0), { x: "x", y: "y", fill: "var(--res)", fillOpacity: 0.22 }),
@@ -812,7 +898,7 @@ gamesBody = {
   const upCard = g => {
     const e = g.line == null || gm(g) == null ? null : gm(g) - g.line
     return htl.html`<article class="gcard up-next">
-      <div class="top"><span class="tag">${dayFmt(g.date)}${g.tourn ? " · " + g.tourn : ""}</span><span class="note">${g.venue === "N" ? "Neutral site" : `at ${shortName(g.id, g.team)}`} · proj. score</span></div>
+      <div class="top"><span class="tag">${dayFmt(g.date)}${g.tourn ? " · " + g.tourn : ""}</span><span class="note">${g.venue === "N" ? "Neutral site" : `at ${shortName(g.id, g.team)}`}</span></div>
       ${nameRow(g.opp_id, g.opp, htl.html`<span class="proj">${projPts(g, false) == null ? "" : Math.round(projPts(g, false))}</span>`)}
       ${nameRow(g.id, g.team, htl.html`<span class="proj">${projPts(g, true) == null ? "" : Math.round(projPts(g, true))}</span>`)}
       ${gwp(g) == null ? "" : htl.html`<div class="wpbar"><span><span style=${{ width: `${(1 - gwp(g)) * 100}%`, background: "var(--pow)" }}></span></span>${shortName(g.opp_id, g.opp)} ${fmtPct(1 - gwp(g))}</div>`}
@@ -929,8 +1015,8 @@ trendsChart = {
   const narrow = width < 600
   const ticks = [...new Set(hist.map(d => d.w))].filter((w, i, a) => a.length < 12 || i % 2 === 0)
   return htl.html`<section style="border-top:3px double var(--navy);padding-top:12px"><div class="chart-scroll">${Plot.plot({
-    width: Math.min(width, 1216), height: narrow ? 560 : 760, marginRight: narrow ? 92 : 210, marginLeft: 40, marginBottom: 34,
-    style: { background: "transparent", fontSize: "12px" },
+    width: Math.min(width, 1216), height: narrow ? 580 : 780, marginRight: narrow ? 92 : 210, marginLeft: 40, marginBottom: 40,
+    style: { background: "transparent", fontSize: "13px" },
     x: { label: null, ticks, tickFormat: w => labels.get(w) },
     y: { reverse: true, domain: [1, yMax], label: null, grid: true, ticks: [1, 5, 10, 15, 20, 25, 30, 40, 50].filter(t => t <= yMax) },
     marks: [
@@ -938,7 +1024,7 @@ trendsChart = {
       Plot.line(me, { x: "w", y: "v", stroke: color, strokeWidth: 3.5 }),
       Plot.dot(me, { x: "w", y: "v", fill: color, r: 4.5, stroke: "var(--paper)", strokeWidth: 1.5 }),
       Plot.dot(hist.filter(d => d.w === lastW), { x: "w", y: "v", fill: color, r: 3.5 }),
-      Plot.text(hist.filter(d => d.w === lastW), { x: "w", y: "v", dx: 10, textAnchor: "start", fill: "var(--ink)", fontSize: narrow ? 10 : 12,
+      Plot.text(hist.filter(d => d.w === lastW), { x: "w", y: "v", dx: 10, textAnchor: "start", fill: "var(--ink)", fontSize: narrow ? 12 : 13,
         fontWeight: d => d.id === trendTeam ? 700 : 400, text: d => narrow ? `${d[key]} ${TEAMS.get(d.id)?.abbr ?? d.team}` : `${d[key]}. ${d.team}` }),
       Plot.tip(hist, Plot.pointer({ x: "w", y: "v", title: d => `${d.team}\n${trendBy} #${d[key]} · ${labels.get(d.w)}\n${d.wins}–${d.losses}` }))
     ]
@@ -958,22 +1044,34 @@ rvpHeadline = {
   if (rev) return `${rev.team} is No. ${rev.rrk} on resume. Its play rates ${ord(rev.prk)}.`
   return "Resume and power agree at the top."
 }
-placeLabels = (rows, x, y, taken = []) => {
+// Label placement in the spirit of ggrepel: each label tries spots around its dot, nearest
+// first, then rings further out, and takes the first that clears the plot edges, every label
+// placed so far and every highlighted dot. Labels that had to move away get a leader line.
+// Text widths are measured with the page's font. Positions come back in data units.
+placeLabels = (rows, x, y, dots = [], taken = []) => {
   const [x0, x1] = x.range(), [y1, y0] = y.range()
-  const boxes = [...taken], hit = b => b[0] < x0 || b[2] > x1 || b[1] < y0 || b[3] > y1 || boxes.some(o => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1])
-  const spots = [[9, 0, "start"], [-9, 0, "end"], [0, -13, "middle"], [0, 13, "middle"], [9, -12, "start"], [9, 12, "start"], [-9, -12, "end"], [-9, 12, "end"]]
-  return [...rows].sort((a, b) => b.wab - a.wab).map(d => {
-    const px = x(d.pw), py = y(d.wab), w = d.team.length * 7.4
-    const box = ([dx, dy, a]) => { const x0 = a === "start" ? px + dx : a === "end" ? px + dx - w : px + dx - w / 2; return [x0, py + dy - 8, x0 + w, py + dy + 8] }
-    const k = spots.findIndex(s => !hit(box(s)))
-    if (k >= 0) boxes.push(box(spots[k]))
-    return { ...d, spot: k }
-  })
+  const ctx = document.createElement("canvas").getContext("2d")
+  ctx.font = "600 12.5px 'Atkinson Hyperlegible Next', system-ui, sans-serif"
+  const boxes = [...taken, ...dots.map(d => [x(d.pw) - 5, y(d.wab) - 5, x(d.pw) + 5, y(d.wab) + 5])]
+  const hit = b => b[0] < x0 || b[2] > x1 || b[1] < y0 || b[3] > y1 || boxes.some(o => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1])
+  const dirs = [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 1], [-1, -1], [-1, 1]]
+  const spots = [9, 22, 36, 52].flatMap(r => dirs.map(([ux, uy]) => [ux * r, uy * (r + 4), r]))
+  return [...rows].sort((a, b) => a.rrk - b.rrk).map(d => {
+    const px = x(d.pw), py = y(d.wab), w = ctx.measureText(d.team).width + 4
+    const at = ([dx, dy]) => { const anchor = dx > 0 ? "start" : dx < 0 ? "end" : "middle"
+      const bx = anchor === "start" ? px + dx : anchor === "end" ? px + dx - w : px + dx - w / 2
+      return { anchor, box: [bx, py + dy - 8, bx + w, py + dy + 8], lx: x.invert(px + dx), ly: y.invert(py + dy) } }
+    const k = spots.findIndex(s => !hit(at(s).box))
+    if (k < 0) return null                       // no room: the tooltip still names the team
+    const p = at(spots[k]); boxes.push(p.box)
+    return { ...d, anchor: p.anchor, lx: p.lx, ly: p.ly, far: spots[k][2] > 9 }
+  }).filter(Boolean)
 }
-labelMarks = (labs, opts) => d3.range(8).map(k => labs.filter(d => d.spot === k)).map((rows, k) => {
-  const [dx, dy, textAnchor] = [[9, 0, "start"], [-9, 0, "end"], [0, -13, "middle"], [0, 13, "middle"], [9, -12, "start"], [9, 12, "start"], [-9, -12, "end"], [-9, 12, "end"]][k]
-  return Plot.text(rows, { ...opts, dx, dy, textAnchor })
-})
+// One text mark per anchor (Plot takes textAnchor as a constant), plus leader lines
+labelMarks = (labs, opts) => [
+  Plot.link(labs.filter(d => d.far), { x1: "pw", y1: "wab", x2: "lx", y2: "ly", stroke: "var(--ink-3)", strokeOpacity: 0.6, strokeWidth: 1 }),
+  ...["start", "end", "middle"].map(a => Plot.text(labs.filter(d => d.anchor === a), { ...opts, x: "lx", y: "ly", textAnchor: a }))
+]
 rvpBody = {
   if (!hasResume) return htl.html`<p class="note">Resume ratings start after the first games.</p>`
   const W = Math.min(width, 1216), side = W >= 1000, PW = side ? W - 420 : W, PH = side ? 640 : 480
@@ -984,10 +1082,11 @@ rvpBody = {
   const m = { l: 56, r: 24, t: 24, b: 46 }
   const xd = d3.extent(d1, d => d.pw), yd = d3.extent(d1, d => d.wab)
   const x = d3.scaleLinear([xd[0] - 2, xd[1] + 2], [m.l, PW - m.r]), y = d3.scaleLinear([yd[0] - 0.5, Math.max(yd[1] + 0.5, 1)], [PH - m.b, m.t])
-  const labs = placeLabels(lab0, x, y)
+  // The bubble caption at the left end of the zero line is off limits too
+  const labs = placeLabels(lab0, x, y, hi, [[m.l, y(0) - 22, m.l + 260, y(0) - 2]])
   const plot = Plot.plot({
     width: PW, height: PH, marginLeft: m.l, marginRight: m.r, marginTop: m.t, marginBottom: m.b,
-    style: { background: "transparent", fontSize: "12px" }, grid: true, color: { type: "identity" },
+    style: { background: "transparent", fontSize: "13px" }, grid: true, color: { type: "identity" },
     x: { domain: x.domain(), label: "Power rating (points per 100 possessions vs. average D1) →" },
     y: { domain: y.domain(), label: "↑ Wins above the bubble" },
     marks: [
@@ -995,7 +1094,7 @@ rvpBody = {
       Plot.text([[x.domain()[0], 0]], { dx: 6, dy: -8, textAnchor: "start", text: () => "Bubble: the last team into the field", fill: "var(--res-t)", fontSize: 12 }),
       Plot.dot(d1.filter(d => !on(d)), { x: "pw", y: "wab", r: 4, fill: d => `var(${GRPVAR[grpOf(d)]})`, fillOpacity: 0.12 }),
       Plot.dot(hi, { x: "pw", y: "wab", r: d => inField.has(d.id) ? 6 : 3.5, fill: d => `var(${GRPVAR[grpOf(d)]})`, fillOpacity: d => inField.has(d.id) ? 0.95 : 0.4, stroke: "var(--paper)", strokeWidth: 1 }),
-      ...labelMarks(labs, { x: "pw", y: "wab", text: "team", fontSize: 12.5, fontWeight: 600, fill: "var(--ink)", stroke: "var(--paper)", strokeWidth: 3, paintOrder: "stroke" }),
+      ...labelMarks(labs, { text: "team", fontSize: 12.5, fontWeight: 600, fill: "var(--ink)", stroke: "var(--paper)", strokeWidth: 3, paintOrder: "stroke" }),
       Plot.tip(d1, Plot.pointer({ x: "pw", y: "wab", title: d => `${d.team} (${d.wins}–${d.losses})\n${d.conf}\nResume #${d.rrk} · WAB ${fmtSigned(d.wab, 2)}\nPower #${d.prk} · ${fmtSigned(d.pw)} per 100` }))
     ]
   })
@@ -1059,6 +1158,11 @@ pollsHeadline = {
   return `The AP poll and the resume share ${shared} of their top 25.` + (out.length && out.length <= 4 ? ` The other ${out.length === 1 ? "one is" : `${out.length} are`} ${listAnd(out)}.` : "")
 }
 pollsBody = {
+  const games = G.filter(d => d.s === season && d.conf_game && d.result != null && d.date < snap.date && !d.tourn)
+  const crec = d3.rollup(games, v => [v.filter(g => g.result === "W").length, v.filter(g => g.result === "L").length], d => d.id)
+  const confAbbr = { "Mountain West": "MW", "Big Ten": "B1G", "Big 12": "B12", "Big East": "BE", "Sun Belt": "SBC", "Am. East": "AE", "American": "AAC",
+    "Big Sky": "BSky", "Big South": "BSth", "Big West": "BW", "Southland": "SLC", "Patriot": "PL", "Summit": "Sum", "Horizon": "HL" }
+  const rec = d => { const c = crec.get(d.id); return `${confAbbr[d.conf] ?? d.conf} · ${d.wins ?? 0}–${d.losses ?? 0}${c ? ` (${c[0]}–${c[1]})` : ""}` }
   const sys = [["ap", "AP poll", "Media voters"], ["coaches", "Coaches poll", "D1 head coaches"], ["prk", "Our power", "How good, per 100 possessions"],
     ["colley_rk", "Colley matrix", "Record and schedule only"], ["sor_rk", "Strength of record", "Chance a top-25 team does as well"]]
   const col = ([k, t, sub]) => {
@@ -1067,7 +1171,7 @@ pollsBody = {
     if (!rows.length) return htl.html`<section style="border-top:3px double var(--navy);padding-top:12px">${head}<div class="empty">Not available for this snapshot.</div></section>`
     return htl.html`<section style="border-top:3px double var(--navy);padding-top:12px">${head}<div style="margin-top:8px">${rows.map(d => {
       const far = hasResume && Math.abs(d.rrk - d[k]) >= 10
-      return htl.html`<div class="poll-row"><span style="text-align:right;font-weight:700">${d[k]}</span>${logo(d.id, 22)}<span class="nm">${teamLink(d)}</span>
+      return htl.html`<div class="poll-row"><span style="text-align:right;font-weight:700">${d[k]}</span>${logo(d.id, 22)}<span class="nm">${teamLink(d)}<span class="rec">${rec(d)}</span></span>
         <span class=${far ? "r far" : "r"}>${hasResume ? `R #${d.rrk}` : ""}</span></div>` })}</div></section>`
   }
   return htl.html`<div class="polls">${sys.map(col)}</div>`

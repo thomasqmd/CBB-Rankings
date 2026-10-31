@@ -16,7 +16,7 @@
 # out jointly.
 # ==============================================================================
 
-SIM_DRAWS <- 1000      # posterior draws used for WAB and the season simulation
+SIM_DRAWS <- 4000      # posterior draws used for WAB and the season simulation: all of them (4 x 1000); P(field) se <= 0.8 pp, ~9 s a snapshot
 
 team_eligible <- function(teams) if (is.null(teams$eligible)) rep(TRUE, nrow(teams)) else teams$eligible %in% TRUE
 

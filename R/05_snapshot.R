@@ -126,10 +126,16 @@ torvik_margin <- function(p, tv) {
   (h$adj_o * a$adj_d - a$adj_o * h$adj_d) / h$lg_o * (h$adj_t * a$adj_t / h$lg_t) / 100
 }
 
+# Normal CRPS of y under Normal(mu, s)
+crps_normal <- function(y, mu, s) { z <- (y - mu) / s; s * (z * (2 * stats::pnorm(z) - 1) + 2 * stats::dnorm(z) - 1 / sqrt(pi)) }
+
 # Every prediction of a completed game (from the latest snapshot before it), scored against the
 # result, the closing line and total, and against Torvik's ratings at the same snapshot. Torvik's
 # home court and margin sd come from earlier seasons only (none for the first season, which is
-# left out of the comparison). outcomes: season, game_id, played, scores, spread, total_line.
+# left out of the comparison). The model's predictive sd per game is the one its p_home implies
+# (normal margins); the line's win probability and CRPS use the sd of the line's errors in
+# earlier seasons (the first season's own). outcomes: season, game_id, played, scores, spread,
+# total_line.
 run_backtest <- function(predictions, torvik = NULL, outcomes = NULL) {
   if (!is.null(outcomes)) {
     predictions <- predictions[, setdiff(names(predictions), c("played", "home_score", "away_score", "spread", "total_line"))]
@@ -145,6 +151,13 @@ run_backtest <- function(predictions, torvik = NULL, outcomes = NULL) {
   p$line <- -p$spread
   p$home_win <- as.integer(p$actual > 0)
   p$period <- ifelse(as.integer(format(p$game_date, "%m")) %in% c(11, 12), "Nov-Dec", "Jan-Apr")
+  sd_imp <- abs(p$pred_margin / stats::qnorm(pmin(pmax(p$p_home, 1e-6), 1 - 1e-6)))
+  p$pred_sd <- ifelse(abs(p$pred_margin) > 2 & is.finite(sd_imp), sd_imp, NA_real_)
+  p$pred_sd <- dplyr::coalesce(p$pred_sd, stats::ave(p$pred_sd, p$season, FUN = \(x) stats::median(x, na.rm = TRUE)))
+  line_sd <- tapply(p$actual - p$line, p$season, \(x) sqrt(mean(x^2, na.rm = TRUE)))
+  prev_sd <- stats::setNames(c(line_sd[1], utils::head(line_sd, -1)), names(line_sd))
+  p$line_sd <- prev_sd[as.character(p$season)]
+  p$p_line <- stats::pnorm(p$line / p$line_sd)
   p$pred_torvik <- p$p_torvik <- NA_real_
   if (!is.null(torvik) && nrow(torvik)) {
     raw <- torvik_margin(p, torvik)
@@ -168,6 +181,8 @@ run_backtest <- function(predictions, torvik = NULL, outcomes = NULL) {
     ats = mean((sign(actual - line) == sign(pred_margin - line))[!is.na(line) & actual != line & pred_margin != line]),
     brier = mean((p_home - home_win)^2),
     logloss = ll(p_home, home_win),
+    crps = mean(crps_normal(actual, pred_margin, pred_sd)),
+    cov80 = mean(abs(actual - pred_margin) <= stats::qnorm(0.9) * pred_sd),
     mae_total = mean(abs(actual_total - pred_total), na.rm = TRUE),
     mae_total_line = mean(abs(actual_total - total_line), na.rm = TRUE),
     mae_total_on_lined = mean(abs(actual_total - pred_total)[!is.na(total_line)], na.rm = TRUE),
@@ -181,8 +196,24 @@ run_backtest <- function(predictions, torvik = NULL, outcomes = NULL) {
     logloss = ll(p_home, home_win), logloss_torvik = ll(p_torvik, home_win),
     closer_than_torvik = mean((abs(actual - pred_margin) < abs(actual - pred_torvik))[pred_margin != pred_torvik]),
     .groups = "drop")
+  # Model against the closing line on the games with one: margin, win probability and CRPS
+  vl <- function(d) d |> dplyr::filter(!is.na(line)) |> dplyr::summarise(
+    games = dplyr::n(),
+    mae = mean(abs(actual - pred_margin)), mae_line = mean(abs(actual - line)),
+    rmse = sqrt(mean((actual - pred_margin)^2)), rmse_line = sqrt(mean((actual - line)^2)),
+    brier = mean((p_home - home_win)^2), brier_line = mean((p_line - home_win)^2),
+    logloss = ll(p_home, home_win), logloss_line = ll(p_line, home_win),
+    crps = mean(crps_normal(actual, pred_margin, pred_sd)), crps_line = mean(crps_normal(actual, line, line_sd)),
+    .groups = "drop")
   list(games = p,
        overall = score(p),
+       vs_line = vl(p),
+       vs_line_period = vl(dplyr::group_by(p, period)),
+       # Against the spread by how far the model is from the line
+       ats_edge = p |> dplyr::filter(!is.na(line), actual != line, pred_margin != line) |>
+         dplyr::mutate(edge = cut(abs(pred_margin - line), c(0, 2, 4, 6, Inf), labels = c("0-2", "2-4", "4-6", "6+"), include.lowest = TRUE)) |>
+         dplyr::group_by(period, edge) |>
+         dplyr::summarise(games = dplyr::n(), ats = mean(sign(actual - line) == sign(pred_margin - line)), .groups = "drop"),
        by_season = score(dplyr::group_by(p, season)),
        by_period = score(dplyr::group_by(p, season, period)),
        vs_overall = vs(p),

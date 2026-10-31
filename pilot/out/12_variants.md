@@ -53,3 +53,27 @@ test against the Phase 1 numbers (MAE 8.87, log loss 0.5259).
 
 The harness pins the base configuration (`BASE_CFG`), so later variants stay comparable with
 these results after the defaults change.
+
+## 2026-10-30: against the adopted defaults
+
+`current` reruns the 91 snapshots under the adopted configuration (prev2, roster prior, pooled
+HCA, normal margins). It is 0.134 better than the Phase 1 base on the same games (MAE 8.971 vs
+9.105; prev2 alone was 0.080 and roster 0.030). The new variants are scored against it
+(`Rscript pilot/12_variants.R summary current`; the summary now also reports Δ Brier and
+Δ CRPS, and pairs each variant with the reference on the games both predicted).
+
+| Variant | Change | Games | Δ MAE | se | Δ Nov–Dec | Δ Jan–Apr | Δ log loss | Δ CRPS | Gates* |
+| :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| midweek | snapshot on Thursday, predicts Thu–Sun | 14,317 | **−0.032** | 0.009 | −0.064 | −0.008 | −0.0020 | −0.026 | 12% |
+| lines | closing lines of past games as data (`pilot/stan/power_lines.stan`) | 22,309 | +0.039 | 0.012 | +0.074 | +0.006 | +0.0018 | +0.033 | 60% |
+
+- **lines**: each past game's closing line enters as a second observation of the expected
+  margin, line100 ~ Normal(μ, σ_line / √w). It is worse, mostly in Nov–Dec, and the fits take
+  2.3× as long. The line already contains the information the model would take from it, and
+  the model then repeats last week's market view instead of updating on results. The model's
+  edge over the line early in the season (`pilot/out/16_calibration.md`) comes from the prior,
+  which lines-as-data dilutes. Not adopted.
+- **midweek**: three more days of results improve the Thu–Sun predictions by 0.03 (0.06 in
+  Nov–Dec), with the same model. This is the value of fresh data, which the live season's
+  daily build supplies (each day's snapshot predicts from everything played). Historical
+  backtests stay weekly; nothing to adopt in the model.

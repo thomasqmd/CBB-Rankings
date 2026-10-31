@@ -137,7 +137,7 @@ prepare_input <- function(games, snap_date, teams, prev = NULL, cfg = model_conf
       team_hca = as.integer(isTRUE(cfg$team_hca)), margin_family = as.integer(cfg$margin_family),
       save_loglik = as.integer(isTRUE(cfg$save_loglik))
     ) |> c(nd_list),
-    teams = teams, games = g, upcoming = upcoming, remaining = remaining, snap_date = snap_date, tempo = tempo_model(g, teams)
+    teams = teams, games = g, upcoming = upcoming, remaining = remaining, snap_date = snap_date, tempo = tempo_model(g, teams, snap_date)
   )
 }
 
@@ -158,10 +158,11 @@ ot_rows <- function(g, cfg) {
 # carry_* x last season's final effect. With the net rating r: offence o = (r + s) / 2 and
 # defence (points allowed above average) d = (s - r) / 2. Scales from 2014-2026 (game sd 4.6
 # possessions and 19 points per 100; season-to-season carry-over 0.58 and 0.38 with residual sd
-# 2.1 and 5.7): lambda = game variance / prior variance. A total adds the average OT points per
-# game (ot_pts, shrunk toward 1 point with 20 games). 2016-2026 weekly: possessions within 3.7
-# (Jan-Apr) / 4.0 (Nov-Dec) per game; totals 13.3 / 13.6 against the closing total's 13.1 / 13.2.
-TEMPO <- list(carry_t = 0.58, carry_s = 0.38, lambda_t = 5, lambda_s = 11, lambda_mu = 1, mu_p = 68.5, mu_t = 206, ot_pts = 1)
+# 2.1 and 5.7): lambda = game variance / prior variance. Games are weighted by recency (half-life
+# in days before the snapshot). A total adds the average OT points per game (ot_pts, shrunk
+# toward 1 point with 20 games). lambda_t and half_life from pilot/15_totals.R: weekly 2016-2026,
+# totals MAE 13.37 (Nov-Dec 13.60, Jan-Apr 13.23) against the closing total's 13.13.
+TEMPO <- list(carry_t = 0.58, carry_s = 0.38, lambda_t = 3, lambda_s = 11, lambda_mu = 1, half_life = 60, mu_p = 68.5, mu_t = 206, ot_pts = 1)
 
 ridge_effects <- function(y, hi, ai, n, w, lambda, m, mu0, lambda_mu) {
   G <- length(y)
@@ -173,7 +174,8 @@ ridge_effects <- function(y, hi, ai, n, w, lambda, m, mu0, lambda_mu) {
 }
 
 # teams: with prev_t, prev_s (last season's final effects) and prev_mu_p, prev_mu_t where known
-tempo_model <- function(g, teams) {
+# (build_prior() carries them); snap_date: the recency weights' reference (NULL: equal weights)
+tempo_model <- function(g, teams, snap_date = NULL) {
   pv <- function(col, default) if (is.null(teams[[col]])) rep(default, nrow(teams)) else dplyr::coalesce(teams[[col]], default)
   m_t <- TEMPO$carry_t * pv("prev_t", 0); m_s <- TEMPO$carry_s * pv("prev_s", 0)
   mu_p0 <- pv("prev_mu_p", TEMPO$mu_p)[1]; mu_t0 <- pv("prev_mu_t", TEMPO$mu_t)[1]
@@ -183,8 +185,9 @@ tempo_model <- function(g, teams) {
   if (nrow(g)) {
     hi <- match(g$home_id, teams$team_id); ai <- match(g$away_id, teams$team_id)
     preg <- dplyr::coalesce(g$poss_reg, g$poss)
-    tp <- ridge_effects(preg, hi, ai, nrow(teams), rep(1, nrow(g)), TEMPO$lambda_t, m_t, mu_p0, TEMPO$lambda_mu)
-    tt <- ridge_effects(100 * (g$home_score + g$away_score) / g$poss, hi, ai, nrow(teams), g$poss / 70, TEMPO$lambda_s, m_s, mu_t0, TEMPO$lambda_mu)
+    rw <- if (is.null(snap_date)) rep(1, nrow(g)) else 0.5^(as.numeric(snap_date - g$game_date) / TEMPO$half_life)
+    tp <- ridge_effects(preg, hi, ai, nrow(teams), rw, TEMPO$lambda_t, m_t, mu_p0, TEMPO$lambda_mu)
+    tt <- ridge_effects(100 * (g$home_score + g$away_score) / g$poss, hi, ai, nrow(teams), rw * g$poss / 70, TEMPO$lambda_s, m_s, mu_t0, TEMPO$lambda_mu)
     out$t <- tp$eff; out$s <- tt$eff; mu_p <- tp$mu; mu_t <- tt$mu
     extra <- (g$home_score + g$away_score) - (g$home_score + g$away_score) * preg / g$poss
     ot_pts <- (sum(extra, na.rm = TRUE) + 20 * TEMPO$ot_pts) / (sum(!is.na(extra)) + 20)
@@ -266,7 +269,8 @@ build_prior <- function(prev, torvik_pre, teams, cfg = model_config(), overrides
   }
   p$prev_sd <- dplyr::coalesce(p$prev_sd, cfg$prior_sd_default)
   p$prev2_dev <- if (is.null(prev2)) NA_real_ else prev2$prev_dev[match(p$team_id, prev2$team_id)]
-  p <- p[!is.na(p$prev_dev), c("team_id", "prev_dev", "prev_sd", "prev2_dev")]
+  # last season's tempo / total effects and league levels ride along for tempo_model()
+  p <- p[!is.na(p$prev_dev), intersect(c("team_id", "prev_dev", "prev_sd", "prev2_dev", "prev_t", "prev_s", "prev_mu_p", "prev_mu_t"), names(p))]
   attr(p, "sources") <- c(own = sum(!is.na(prev$prev_dev)), torvik = if (is.null(tv)) 0L else nrow(tv), roster = n_roster, prev2 = sum(!is.na(p$prev2_dev)), teams = nrow(teams))
   attr(p, "features") <- feats
   p

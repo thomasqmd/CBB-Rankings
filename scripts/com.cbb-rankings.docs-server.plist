@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Serves docs/ (dashboard and reports) on 127.0.0.1:8766 for Tailscale Serve, which proxies it to
+     the tailnet at https://<machine>.<tailnet>.ts.net/cbb/ (the macOS Tailscale app can only proxy,
+     not serve a folder). Always on; restarts if it exits. Install:
+       cp scripts/com.cbb-rankings.docs-server.plist ~/Library/LaunchAgents/
+       launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.docs-server.plist
+       tailscale serve --bg --set-path /cbb http://127.0.0.1:8766
+     Remove: tailscale serve --set-path /cbb off; launchctl bootout gui/$(id -u)/com.cbb-rankings.docs-server -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cbb-rankings.docs-server</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string><string>-m</string><string>http.server</string><string>8766</string>
+    <string>--bind</string><string>127.0.0.1</string>
+    <string>--directory</string><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/docs</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/logs/docs-server.log</string>
+  <key>StandardErrorPath</key><string>/Users/thomasreinke/Local-Coding/CBB-Rankings/logs/docs-server.log</string>
+</dict>
+</plist>

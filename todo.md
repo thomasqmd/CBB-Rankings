@@ -1,26 +1,13 @@
 # TODO
 
 Phases follow `plan.md` §E. The pilot is done, the pipeline is built and backtested for 2013-14 to
-2026-27, and Phase 1 (ingest) is complete (2026-10-24). Phases 2–6 are coded and tested; the
-store still holds the Phase 1 build (2026-10-24 evening).
+2026-27, and the full rebuild under the re-chosen defaults (prev2, pooled HCA prior, normal
+margins, roster prior) finished 2026-10-25. Phases 1–5 are done, 6 waits on the season.
 
 ## Up next
 
-1. **Full rebuild** (held while other jobs run; ~2–3 h, every snapshot refits under the new
-   defaults: prev2, pooled HCA prior, normal margins, roster prior):
-   `Rscript -e 'targets::tar_make()'`, then `Rscript check_build.R`. Check:
-   - backtest vs Phase 1 (MAE 8.87, log loss 0.5259) and vs the line; Nov–Dec gap to the line
-   - gates with `b_prev2` and the normal margins
-   - new checks: totals vs closing total, shot calibration, prior sources (`prev2`, `roster`),
-     field-odds sums
-   - `docs/index.html`, `docs/reports/season_retro.html` and `model_diagnostics.html` render
-     (first `tar_quarto` run); look through the dashboard tabs again
-   - whether prev2 and the roster prior overlap: compare `b_prev2` with the variant run and the
-     Nov–Dec gain with the two variants' separate gains
-2. After the rebuild: rerun `pilot/14_resume_validation.R` (bans now applied) and
-   `pilot/11_signals.R`; update the numbers in their reports and in `README.md` / `plan.md`.
-3. Install the daily build yourself (`README.md`), then measure it against the Phase 6 exit check
-   (< 10 min, ≤ 2 CBBD calls; `logs/daily_<date>.log`).
+1. Install the daily build yourself (`README.md`) before opening night, then measure it against
+   the Phase 6 exit check (< 10 min, ≤ 2 CBBD calls; `logs/daily_<date>.log`)
 
 Waiting on the season or outside input:
 - Injuries: decide around 2026-11-16 whether ESPN's report is filled enough to use (absences are
@@ -31,6 +18,16 @@ Waiting on the season or outside input:
 - Methods paper: later
 
 ## Done
+
+- [x] Full rebuild 2026-10-30 (1 h 42 m, 604 targets, no errors; two earlier attempts stopped at the Torvik comparison: `read_torvik_tm()` leaked connections, and Torvik answers a future date with a 200 HTML redirect, both fixed in `R/01_ingest.R`). `check_build.R` clean: gates 274 / 277 (the same three `tau` misses), margins unchanged (MAE 8.80, log loss 0.5230), totals MAE 13.58 → 13.36 vs closing total 13.13, 80% interval coverage 80.3%, field odds from 4,000 draws, dashboard rendered with the CFB changes
+
+- [x] Stan pilots 2026-10-30 against the adopted defaults (`pilot/out/12_variants.md`): closing lines as data worse (+0.039, se 0.012; not adopted); Thursday snapshots 0.032 better on Thu–Sun games (0.064 in Nov–Dec): the value of fresh data, which the daily build supplies. SBC (`pilot/out/17_sbc.md`): 200 replicates, ranks uniform for every parameter, no divergences. Prior sensitivity (`pilot/out/18_priorsense.md`): only the pooled hierarchy scales, drift, carry-over and early-season HCA are prior-sensitive, as designed; no change
+
+- [x] Pilots 2026-10-30. Totals (`pilot/15_totals.R`): the tempo / total carry-over never reached the pipeline (`build_prior()` dropped the columns); fixed, plus recency weights (half-life 60 days) and λ_t 3: totals MAE 13.59 → 13.37 (Nov–Dec 14.02 → 13.60) vs closing total 13.13. Calibration and market (`pilot/16_calibration.R`): 80% intervals cover 80.0–80.5%, recalibration noise-sized (not adopted); a model + line blend beats the line by 0.05 in Nov–Dec only; ATS 60.8% when the model and line disagree by 6+ in Nov–Dec. Backtest now reports CRPS, coverage, vs-line Brier / log loss / CRPS and ATS by disagreement
+- [x] CFB dashboard changes ported 2026-10-30: rank chart view (resume / power dumbbell, offense / defense icons, bubble band), conference and overall records in the polls, (resume/power) ranks in the schedule, ggrepel-style labels on Resume vs. Power, larger type, shorter nameplate copy; 4,000 simulation draws (all posterior draws). Kick-off times not ported: the games table has dates only
+
+- [x] Full rebuild 2026-10-25 under the new defaults (overnight from 2026-10-24 23:04, 96 min; the first `tar_quarto` render failed, fixed and resumed 11:26). 925 targets, no errors; `check_build.R` 2026-10-30: 274 / 277 snapshots pass the gates (the 3 misses are `tau`, R-hat ≤ 1.0137), live preseason snapshot passes, field-odds sums OK, dashboard current. Backtest 65,268 games: MAE 8.80 (Phase 1 8.87), log loss 0.5230 (0.5259), ATS 51.8%; on lined games 8.81 vs the line's 8.75 (Phase 3 exit check met, gap 0.06). Vs Torvik on shared games 8.846 / 8.980 / line 8.791; Nov–Dec 9.165 / 9.320 / 9.130 (was 9.325), Jan–Apr 8.663 / 8.785 / 8.596. Totals MAE 13.58 vs closing total 13.13. `b_prev2` median 0.10 (0.07 in the variant run). prev2 and the roster prior don't overlap: on the variant backtest's 22,309 games the joint gain is −0.137 (Nov–Dec −0.272) against −0.128 (−0.254) for the four changes summed. Shot calibration warns on 2019 tips, 2026 layups and 2026 hooks (ESPN coding; not used by `lux100`)
+- [x] Reran `pilot/14_resume_validation.R` (bans applied; 33.5 / 36.3 at-large, power 29.6) and `pilot/11_signals.R` (absences −7.02 se 0.41, semi-home within noise) on the rebuild; reports, `README.md` and `plan.md` updated 2026-10-30
 
 - [x] Phase 1 rebuild 2026-10-24 (1 h 36 m, 659 targets, no errors): every completed CBBD D1 game now in `games` (47 more D1 games in 2015-16), 141 own-floor "neutral" games recoded to home across 2014–2026, ESPN/CBBD neutral flags disagree on 44 (35 in 2026, `tar_read(venues)`), 0 conference disagreements, ineligible teams 0–11 by season. Backtest unchanged: 65,268 games (was 65,217), MAE 8.87, log loss 0.5259, ATS 51.3%; vs Torvik 8.914 / 8.980 / line 8.791. Gates 273 / 277 (was 274; still only `tau`, R-hat ≤ 1.017, now different snapshots, so MCMC noise)
 - [x] Full build 2026-10-24: 571 targets, 3 h 43 m, no errors; `check_build.R` run (274 / 277 snapshots pass the gates, the 3 misses are `tau` at R-hat ≤ 1.0125)
@@ -127,7 +124,7 @@ Waiting on the season or outside input:
 - [x] Daily build script `scripts/daily_build.sh` + launchd plist (07:00; you install it); CBBD calls logged to `logs/cbbd_calls.log`
 - [ ] Daily `targets` run during 2026-27 (opening night 2026-11-02); exit check < 10 min, ≤ 2 CBBD calls
 - [x] Dashboard sketch with pilot numbers (`plan.md` §F; https://claude.ai/artifact/FhRJURvGT7ZSnMssjH4bwS)
-- [x] Quarto + Observable JS dashboard (`docs/dashboard.qmd` → `docs/index.html`, `dashboard_data` + `tar_quarto` targets): all nine tabs checked in headless Chrome on dev data (2026-27 preseason, 2025-26 final); first pipeline render at the rebuild
+- [x] Quarto + Observable JS dashboard (`docs/dashboard.qmd` → `docs/index.html`, `dashboard_data` + `tar_quarto` targets): all nine tabs checked in headless Chrome on dev data (2026-27 preseason, 2025-26 final); first pipeline render 2026-10-25
 - [x] `check_build.R` (errored targets, gates, freshness, coverage, membership, venues, missing games, player tables, injury archive, backtest vs line and Torvik, totals, shot calibration, prior sources, field odds, dashboard freshness)
-- [x] Reports: `docs/reports/season_retro.qmd`, `model_diagnostics.qmd` (`tar_quarto` targets; first render at the rebuild)
+- [x] Reports: `docs/reports/season_retro.qmd`, `model_diagnostics.qmd` (`tar_quarto` targets; first rendered by the 2026-10-25 rebuild)
 - [ ] Methods paper (later)

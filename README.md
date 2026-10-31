@@ -7,11 +7,11 @@ Two Division I men's basketball rankings, the CFB-Rankings method ported to bask
 | **Power** | How good is a team right now? | Points per 100 possessions vs. an average D1 team on a neutral floor |
 | **Resume** | What has a team earned? | Wins Above Bubble (WAB): wins beyond what the bubble team would have managed with the same schedule |
 
-Status (2026-10-24): **pilot done; the full 2015–2027 pipeline is built and backtested; Phases
-1–6 are coded and tested.** The model defaults were re-chosen by a variant backtest
-(`pilot/out/12_variants.md`); the full rebuild under them, and the first pipeline render of the
-dashboard and reports, are next. Pilot results are in `pilot/out/`, the plan in `plan.md`, tasks
-in `todo.md` (Up next).
+Status (2026-10-30): **pilot done; the full 2015–2027 pipeline is built, rebuilt under the
+re-chosen defaults (2026-10-25) and backtested; Phases 1–6 are coded and tested.** Backtest
+2015–2026: MAE 8.80 (8.81 vs the closing line's 8.75 on games with a line), log loss 0.5230,
+ahead of Torvik (8.85 vs 8.98 on shared games). Pilot results are in `pilot/out/`, the plan in
+`plan.md`, tasks in `todo.md` (Up next).
 
 ## Method
 
@@ -47,7 +47,7 @@ leave the power ranking, and the benchmark is the (field − automatic bids)-th 
 that venue); a loss subtracts P(benchmark wins). Snapshots report WAB, its rank interval, the
 chance WAB is positive, and schedule strength (the benchmark's expected loss rate).
 
-In season, 1,000 draws simulate the rest of the regular season and each conference tournament
+In season, all 4,000 posterior draws simulate the rest of the regular season and each conference tournament
 (bracket sizes from last season's), giving projected WAB, P(regular-season title), P(automatic
 bid), P(at-large: top n by projected WAB among the rest) and P(in the field). The team sheet adds
 quadrant records (NET's cut-offs applied to our power ranks), SOR, luck (wins − expected wins)

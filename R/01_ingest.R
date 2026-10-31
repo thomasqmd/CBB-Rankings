@@ -119,6 +119,9 @@ torvik_get <- function(url, dest) {
   r <- httr2::request(url) |> httr2::req_user_agent("Mozilla/5.0") |>
     httr2::req_error(is_error = \(r) FALSE) |> httr2::req_perform(path = dest)
   if (httr2::resp_status(r) >= 400) { unlink(dest); return(FALSE) }
+  # A missing file can come back as a 200 HTML redirect. Time-machine files arrive as plain JSON
+  # despite the .gz name (gzcon() reads both), so data starts with gzip's magic byte or "["
+  if (grepl("\\.json\\.gz$", url) && !(readBin(dest, "raw", 1L) %in% as.raw(c(0x1f, 0x5b)))) { unlink(dest); return(FALSE) }
   TRUE
 }
 
@@ -146,6 +149,7 @@ fetch_torvik <- function(season, opening_night, today = Sys.Date()) {
 fetch_torvik_tm <- function(date) {
   dir.create(raw_path("torvik", "tm"), recursive = TRUE, showWarnings = FALSE)
   for (k in 0:3) {
+    if (as.Date(date) - k > Sys.Date()) next          # no file for a day that hasn't happened
     d <- format(as.Date(date) - k, "%Y%m%d")
     dest <- raw_path("torvik", "tm", sprintf("tm_%s.json.gz", d))
     if (file.exists(dest)) return(dest)
@@ -156,7 +160,9 @@ fetch_torvik_tm <- function(date) {
 }
 
 read_torvik_tm <- function(f) {
-  x <- jsonlite::fromJSON(gzcon(file(f, "rb")))
+  con <- gzcon(file(f, "rb"))
+  on.exit(close(con))                     # fromJSON leaves a connection open; a season's snapshots would exhaust R's 128
+  x <- jsonlite::fromJSON(con)
   data.frame(team = x[, 2], record = x[, 4], adj_o = as.numeric(x[, 5]), adj_d = as.numeric(x[, 7]), adj_t = as.numeric(x[, 45]))
 }
 
