@@ -46,3 +46,16 @@ test_that("snapshot dates: opening night, Mondays, the day after the final", {
   expect_equal(live$kind, "preseason")
   expect_equal(nrow(limit_snaps(d, 2)), 2)
 })
+
+test_that("a stray game the day before opening night doesn't start the weekly snapshots", {
+  # 2 games on Sunday 2026-11-01, the full slate on Monday 11-02
+  g <- toy_games()[c(1, 1, rep(2, 20), 3), ]
+  g$game_id <- seq_len(nrow(g)); g$played <- TRUE
+  g$game_date <- as.Date(c("2026-11-01", "2026-11-01", rep("2026-11-02", 20), "2026-11-12"))
+  d <- snapshot_dates(g, 2027, today = as.Date("2026-11-03"))
+  expect_equal(d$snap_date, as.Date(c("2026-11-01", "2026-11-03")))
+  expect_equal(d$kind, c("preseason", "live"))
+  d <- snapshot_dates(g, 2027, today = as.Date("2026-11-10"))
+  expect_equal(d$snap_date[d$kind == "weekly"], as.Date("2026-11-09"))
+  expect_equal(d$next_date[1], as.Date("2026-11-09"))            # preseason covers opening week
+})

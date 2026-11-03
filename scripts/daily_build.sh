@@ -17,6 +17,12 @@ start=$(date +%s)
   Rscript check_build.R
   check=$?
   echo "== check_build exit $check"
+  if [ "$status" -eq 0 ] && [ "$check" -eq 0 ]; then
+    sh scripts/publish_pages.sh
+    echo "== publish exit $?"
+  else
+    echo "== publish skipped (build or checks failed)"
+  fi
   calls_after=$(wc -l < logs/cbbd_calls.log 2>/dev/null || echo 0)
   mins=$(( ($(date +%s) - start) / 60 ))
   echo "== $(date '+%F %T') done in ${mins} min, $((calls_after - calls_before)) CBBD calls"

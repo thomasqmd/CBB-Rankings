@@ -7,7 +7,11 @@ margins, roster prior) finished 2026-10-25. Phases 1–5 are done, 6 waits on th
 ## Up next
 
 1. Install the daily build yourself (`README.md`) before opening night, then measure it against
-   the Phase 6 exit check (< 10 min, ≤ 2 CBBD calls; `logs/daily_<date>.log`)
+   the Phase 6 exit check (< 10 min, ≤ 2 CBBD calls; `logs/daily_<date>.log`). Each passing run
+   publishes to https://thomasqmd.github.io/CBB-Rankings/ (live since 2026-11-02, `gh-pages`)
+2. Optional: serve the dashboard and reports on the tailnet (stopped 2026-10-30). Install the docs
+   server (`scripts/com.cbb-rankings.docs-server.plist`, install lines in its header, including
+   the `tailscale serve --set-path /cbb` line) → https://thomas-mac-studio.tail4e3149.ts.net/cbb/
 
 Waiting on the season or outside input:
 - Injuries: decide around 2026-11-16 whether ESPN's report is filled enough to use (absences are
@@ -18,6 +22,8 @@ Waiting on the season or outside input:
 - Methods paper: later
 
 ## Done
+
+- [x] CFB dashboard changes of 2026-11-01 ported 2026-11-03: matchup Power / Resume view (WAB, rank range, field odds, SOR, schedule, quadrant records, both teams' games), "Compare with…" from the team sheet, schedule lines from the team's side (negative = favored), shorter headlines and notes, smaller lede type. CFB's projected-field fix was already how `proj` works here; the week labels don't apply (dates)
 
 - [x] Full rebuild 2026-10-30 (1 h 42 m, 604 targets, no errors; two earlier attempts stopped at the Torvik comparison: `read_torvik_tm()` leaked connections, and Torvik answers a future date with a 200 HTML redirect, both fixed in `R/01_ingest.R`). `check_build.R` clean: gates 274 / 277 (the same three `tau` misses), margins unchanged (MAE 8.80, log loss 0.5230), totals MAE 13.58 → 13.36 vs closing total 13.13, 80% interval coverage 80.3%, field odds from 4,000 draws, dashboard rendered with the CFB changes
 

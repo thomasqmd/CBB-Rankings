@@ -30,7 +30,7 @@ ROSTERS_FROM <- 2025L
 ESPN_CORE <- "https://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball"
 ESPN_SITE <- "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 CBBD_URL <- "https://api.collegebasketballdata.com"
-MIN_REFRESH_HOURS <- 20
+MIN_REFRESH_HOURS <- 8   # an evening build by hand still leaves the 07:00 run a fresh fetch
 LIVE_LOOKBACK <- 10
 
 # Season s = the season ending in spring of year s (2026 = 2025-26)

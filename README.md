@@ -99,6 +99,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.injurie
 | `data/postseason_bans.csv` | NCAA postseason bans (team, season), hand-kept |
 | `check_build.R` | Post-build checks (gates, coverage, membership, venues, missing games, player tables, injury archive, backtest and totals, shot calibration, prior sources, field odds, dashboard freshness) |
 | `scripts/daily_build.sh` | In-season daily build: `tar_make`, checks, run time and CBBD call count in `logs/daily_<date>.log` (launchd: `scripts/com.cbb-rankings.daily.plist`) |
+| `scripts/publish_pages.sh` | Publishes the dashboard (`docs/index.html`, not the reports) to GitHub Pages (`gh-pages`, one force-pushed commit); run by the daily build after passing checks |
 | `scripts/poll_injuries.sh` | Daily ESPN injury report archive (launchd: `scripts/com.cbb-rankings.injuries.plist`) |
 | `renv.lock` | Package versions, restored into the user library (the project is not renv-activated) |
 | `tests/testthat/` | Unit tests (`Rscript -e 'testthat::test_dir("tests/testthat")'`) |
@@ -136,7 +137,10 @@ Rscript check_build.R
 - Parsing changes: bump `PREP_VERSION` (`R/02_prep.R`) so final seasons re-sync.
 
 In season, `scripts/daily_build.sh` runs the build, the checks and the render once a day and logs
-the run time and CBBD calls. To schedule it (launchd, 07:00):
+the run time and CBBD calls. When the build and checks pass it publishes the dashboard (`docs/index.html`, not the reports) to GitHub Pages
+(`scripts/publish_pages.sh`: one force-pushed orphan commit on `gh-pages`, so the rendered
+output never builds up in the history) → <https://thomasqmd.github.io/CBB-Rankings/>. To
+schedule it (launchd, 07:00), from the repo root:
 
 ```bash
 cp scripts/com.cbb-rankings.daily.plist ~/Library/LaunchAgents/

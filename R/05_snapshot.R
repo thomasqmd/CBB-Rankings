@@ -26,9 +26,16 @@ snapshot_dates <- function(games, season, today = Sys.Date(), cfg = model_config
   if (live && today <= opening) return(data.frame(snap_date = opening, next_date = opening + cfg$snap_every, kind = "preseason"))
   end <- if (live) min(today, max(d1$game_date) + 1) else max(played) + 1
   if (final_only) return(data.frame(snap_date = end, next_date = as.Date(NA), kind = "final"))
-  mondays <- seq(opening + 1, end, by = "day")
-  mondays <- mondays[is_monday(mondays)]
-  mondays <- mondays[seq(1, length(mondays), by = max(1, cfg$snap_every %/% 7))]
+  # Weekly snapshots start after the first full slate, not after a stray early game: 2026-27 had
+  # 2 games on Sunday 11-01 before the 119-game opening night on Monday 11-02, which made 11-02 a
+  # weekly fit on 2 games. Every earlier season opens with its full slate (80-126 games).
+  n_day <- table(d1$game_date[d1$season_type == "regular"])
+  slate <- as.Date(names(n_day)[n_day >= 20][1])
+  if (is.na(slate)) slate <- opening
+  mondays <- seq(slate + 1, max(slate + 1, end), by = "day")
+  mondays <- mondays[is_monday(mondays) & mondays <= end]
+  every <- max(1, cfg$snap_every %/% 7)
+  mondays <- mondays[(seq_along(mondays) - 1) %% every == 0]
   dates <- sort(unique(c(if (preseason) opening, mondays, if (end > opening) end)))
   sel <- selection_monday(d1)
   kind <- ifelse(dates == opening, "preseason", ifelse(dates == end, if (live) "live" else "final", "weekly"))

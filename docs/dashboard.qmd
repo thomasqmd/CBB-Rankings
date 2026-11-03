@@ -123,7 +123,7 @@ htl.html`<div>${briefs}</div>`
 
 ::: {.rk-section}
 ```{ojs}
-htl.html`<div class="rk-head"><h2 class="disp" id="d1-title">The Division I rankings</h2></div>`
+htl.html`<div class="rk-head" style="padding:0 0 18px"><h2 class="sr-only" id="d1-title">Division I rankings</h2></div>`
 ```
 ::: {.ctl-row .ctl style="padding-bottom:12px"}
 ```{ojs}
@@ -165,6 +165,9 @@ viewof teamConf = Inputs.select(confKeys(d1), { label: "Conference", format: con
 ```{ojs}
 viewof teamId = teamPicker(d1, teamConf, "Team", pickedTeam ?? (byRes[0] ?? byPow[0]).id)
 ```
+```{ojs}
+htl.html`<button type="button" class="btn" onclick=${() => goCompare(tRow.id)}>Compare with…</button>`
+```
 :::
 ```{ojs}
 htl.html`<div>${teamBody}</div>`
@@ -188,6 +191,11 @@ viewof teamB = Inputs.select(mTeams.map(d => d.id), { label: "Team B", format: i
 ```
 :::
 ::: {.ctl-row .ctl .seg}
+```{ojs}
+viewof mView = Inputs.radio(["Power", "Resume"], { label: "Compare", value: "Power" })
+```
+:::
+::: {.ctl-row .ctl .seg .venue-row}
 ```{ojs}
 viewof venue = Inputs.radio(new Map([["Neutral floor", 0], [`At ${byId.get(teamA).team}`, 1], [`At ${byId.get(teamB).team}`, -1]]), { label: "Site", value: 0 })
 ```
@@ -385,6 +393,7 @@ TEAMS = new Map(transpose(teams_raw).map(t => [t.id, t]))
 seasons = [...new Set(S.map(d => d.s))].sort((a, b) => b - a)
 seasonLabel = s => `${s - 1}–${String(s % 100).padStart(2, "0")}`
 mutable pickedTeam = null
+mutable mResSort = "Resume ±"
 ```
 
 ```{ojs}
@@ -524,14 +533,14 @@ SORTS = [
   { key: "ap", label: "AP poll", col: "ap" }
 ].filter(s => hasResume || !["resume", "sos"].includes(s.key)).filter(s => d1.some(d => d[s.col] != null))
 rankingsHeadline = {
-  if (!hasResume) return `Preseason: ${byPow[0].team} starts at No. 1 in power.`
-  const r1 = byRes[0], p1 = byPow[0], pr = id => prevRows.get(id)
-  let a = pr(r1.id)?.rrk === 1 ? `${r1.team} stays No. 1 on resume` : pr(r1.id)?.rrk ? `${r1.team} climbs to No. 1 on resume` : `${r1.team} starts at No. 1 on resume`
+  if (!hasResume) return `${byPow[0].team} opens No. 1 in power`
+  const r1 = byRes[0], p1 = byPow[0], was = prevRows.get(r1.id)?.rrk
+  const a = `${r1.team} ${was === 1 ? "holds" : was ? "climbs to" : "opens at"} No. 1`
+  // Biggest fall among the last snapshot's top five
   const fall = [...prevRows.values()].filter(d => d.rrk <= 5 && byId.get(d.id)).map(d => ({ d: byId.get(d.id), from: d.rrk }))
     .filter(x => x.d.rrk - x.from >= 4).sort((x, y) => (y.d.rrk - y.from) - (x.d.rrk - x.from))[0]
-  if (fall) a += ` as ${fall.d.team} slides to ${ord(fall.d.rrk)}`
-  const b = p1.id === r1.id ? `It is also the best team on the floor.` : `${p1.team} is ${pr(p1.id)?.prk === 1 ? "still" : "now"} the best team on the floor.`
-  return `${a}. ${b}`
+  if (fall) return `${a}; ${fall.d.team} falls to ${ord(fall.d.rrk)}`
+  return p1.id === r1.id ? a : `${a}; ${p1.team} tops power`
 }
 briefs = {
   const brief = (label, color, d, s) => htl.html`<div class="brief">${eyebrow(label, color)}
@@ -607,7 +616,7 @@ rankingsTable = {
     </div></div>
     <div class="rk-foot">
       <span>${snap.passed ? "✓ Model converged" : "⚠ Convergence checks failed"} · home court ${fmtSigned(snap.hca)} pts</span>
-      <span>Rating: points per 100 possessions vs. an average D1 team · dot = median, bar and small numbers = 80% range · Field = chance to make the NCAA tournament</span>
+      <span>WAB is wins above what the last team into the field would have on the same schedule. Rating is points per 100 possessions vs. an average D1 team. Dot is the median; bars and ranges are 80% intervals. Field is the chance to make the NCAA tournament.</span>
     </div></div>`
 }
 ```
@@ -739,8 +748,8 @@ teamBody = {
       <td class="muted" style="width:70px">${dayFmt(g.date).replace(/^\w+, /, "")}</td>
       <td>${teamCell(o, `${g.venue === "A" ? "Away" : g.venue === "N" ? "Neutral" : "Home"}${o.prk ? ` (${o.rrk ?? "–"}/${o.prk})` : " · non-D1"}${g.tourn ? ` · ${g.tourn}` : ""}`, 28)}</td>
       <td>${played ? htl.html`<strong class=${win ? "up" : "down"}>${win ? "W" : "L"} ${g.pts}–${g.opp_pts}${g.ot ? " OT" : ""}</strong>${g.missing >= 0.1 ? htl.html` <span class="note" title="Share of usual minutes missing">· short ${Math.round(g.missing * 100)}%</span>` : ""}` : htl.html`<span class="muted">to play</span>`}</td>
-      <td class="n">${mm == null ? "–" : fmtSigned(mm)}</td>
-      <td class="n muted hide-sm">${g.line == null ? "–" : fmtSigned(g.line)}</td>
+      <td class="n">${mm == null ? "–" : fmtSigned(-mm)}</td>
+      <td class="n muted hide-sm">${g.line == null ? "–" : fmtSigned(-g.line)}</td>
       <td class="hide-xs">${wp == null ? "–" : pbar(wp, played ? "var(--field)" : "var(--pow)", 80)}</td>
       <td class="n">${played && g.wab_game != null ? htl.html`<strong style=${{ color: g.wab_game >= 0 ? "var(--res-t)" : "var(--down)" }}>${fmtSigned(g.wab_game, 2)}</strong>` : htl.html`<span class="muted">–</span>`}</td>
     </tr>`
@@ -761,10 +770,10 @@ teamBody = {
           <span style="display:flex;gap:12px;font-size:13px;font-weight:700"><span class="res-t">Resume #${tRow.rrk}</span><span class="pow-t">Power #${tRow.prk}</span></span></div>${mini}</div>` : ""}
     </aside>
     <section style="min-width:0">
-      ${secH("Schedule", htl.html`<span class="note">Model and Vegas: ${tRow.team}'s expected margin before tip-off</span>`)}
+      ${secH("Schedule", htl.html`<span class="note">Model and Vegas: ${tRow.team}'s line before tip-off</span>`)}
       <div class="tbl-wrap"><table class="t"><thead><tr><th>Date</th><th>Opponent<br><span style="font-weight:400">(resume/power)</span></th><th>Result</th><th class="n pow-t">Model</th><th class="n hide-sm">Vegas</th><th class="hide-xs">Win chance</th><th class="n res-t">Resume ±</th></tr></thead>
       <tbody>${played.map(tr)}${left.length ? htl.html`<tr class="grp"><td colspan="7"><span class="eb" style="color:var(--ink-3)">After this snapshot</span></td></tr>` : ""}${left.map(tr)}</tbody></table></div>
-      <p class="note">Resume ± is what each result earned against the last team into the field (latest ratings). "Short" marks games played without rotation players (share of usual minutes missing), known only afterwards.</p>
+      ${played.some(g => g.missing >= 0.1) ? htl.html`<p class="note">"Short" marks games played without rotation players (share of usual minutes missing), known only afterwards.</p>` : ""}
     </section></div>`
 }
 ```
@@ -774,6 +783,17 @@ teamBody = {
 ```{ojs}
 //| output: false
 mTeams = [...d1].sort((a, b) => a.team.localeCompare(b.team))
+// Team sheet → Matchup: this team as A, the next team up the resume (or down, for No. 1) as B,
+// ready to change
+goCompare = id => {
+  const list = hasResume ? byRes : byPow, i = list.findIndex(d => d.id === id)
+  const set = (v, x) => { v.value = x; v.dispatchEvent(new Event("input", { bubbles: true })) }
+  set(viewof teamA, id)
+  set(viewof teamB, list[i <= 0 ? 1 : i - 1].id)
+  set(viewof mView, hasResume ? "Resume" : "Power")
+  location.hash = "matchup"
+  window.scrollTo(0, 0)
+}
 matchup = {
   const a = byId.get(teamA), b = byId.get(teamB), v = venue
   const poss = a.tempo != null && b.tempo != null ? a.tempo + b.tempo - snap.mu_p : snap.mu_p
@@ -790,15 +810,70 @@ favTxt = m => `${m.mean >= 0 ? m.a.team : m.b.team} by ${Math.abs(m.mean).toFixe
 matchupHeadline = {
   const { a, b, mean } = matchup
   if (a.id === b.id) return "Pick two different teams"
-  const site = venue === 0 ? "on a neutral floor" : `at ${venue > 0 ? a.team : b.team}`
-  if (Math.abs(mean) < 1.5) return `${a.team} vs. ${b.team} is a coin flip ${site}`
+  if (mView === "Resume") {
+    if (!hasResume || a.wab == null || b.wab == null) return `${a.team} vs. ${b.team}`
+    const [lead, trail] = a.wab >= b.wab ? [a, b] : [b, a]
+    return `${lead.team} leads ${trail.team} by ${(lead.wab - trail.wab).toFixed(2)} WAB`
+  }
+  if (Math.abs(mean) < 1.5) return `${a.team}, ${b.team} a toss-up`
   const [fav, dog] = mean >= 0 ? [a, b] : [b, a]
-  return `${fav.team} by ${Math.abs(mean).toFixed(1)} over ${dog.team} ${site}`
+  return `${fav.team} by ${Math.abs(mean).toFixed(1)} over ${dog.team}`
 }
 matchupBody = {
+  // Site only matters for the power view
+  const vr = document.querySelector(".venue-row")
+  if (vr) vr.style.display = mView === "Power" ? "" : "none"
+  return mView === "Power" ? powerBody : resumeBody
+}
+mSide = (d, cls) => htl.html`<div class=${"side " + cls}>${logo(d.id, 96)}<h2 class="disp">${d.team}</h2>
+  <span style="color:var(--ink-2)">${d.wins ?? 0}–${d.losses ?? 0} · Power #${d.prk}${d.rrk ? ` · Resume #${d.rrk}` : ""}</span></div>`
+resumeBody = {
+  const a = byId.get(teamA), b = byId.get(teamB)
+  if (!hasResume || a.wab == null || b.wab == null) return htl.html`<p class="note">Resume rankings start after the first games.</p>`
+  const played = d => G.filter(g => g.s === season && g.id === d.id && g.result != null && g.date < snap.date)
+  const row = (lab, av, bv, better) => htl.html`<div class="tape-row"><span class=${better === "a" ? "w" : "l"}>${av}</span>
+    <span class="eb">${lab}</span><span class=${better === "b" ? "w" : "l"}>${bv}</span></div>`
+  const cmp = (x, y, hi = true) => x == null || y == null || x === y ? null : (hi ? x > y : x < y) ? "a" : "b"
+  const rng = d => d.rrk_lo == null ? "" : htl.html` <span class="note">${d.rrk_lo}–${d.rrk_hi}</span>`
+  const quad = (d, k) => d[`q${k}w`] == null ? "–" : `${d[`q${k}w`]}–${d[`q${k}l`]}`
+  const tape = [
+    row("WAB", htl.html`${fmtSigned(a.wab, 2)} <span class="note">#${a.rrk}</span>`, htl.html`<span class="note">#${b.rrk}</span> ${fmtSigned(b.wab, 2)}`, cmp(a.wab, b.wab)),
+    row("Rank · 80%", htl.html`#${a.rrk}${rng(a)}`, htl.html`#${b.rrk}${rng(b)}`, cmp(a.rrk, b.rrk, false)),
+    ...(hasOdds ? [row("NCAA field", fmtPct(a.p_field), fmtPct(b.p_field), cmp(a.p_field, b.p_field))] : []),
+    row("SOR", `#${a.sor_rk ?? "–"}`, `#${b.sor_rk ?? "–"}`, cmp(a.sor_rk, b.sor_rk, false)),
+    row("Schedule", `#${a.sos_rk ?? "–"}`, `#${b.sos_rk ?? "–"}`, cmp(a.sos_rk, b.sos_rk, false)),
+    row("Record", `${a.wins ?? 0}–${a.losses ?? 0}`, `${b.wins ?? 0}–${b.losses ?? 0}`, null),
+    ...[1, 2, 3, 4].map(k => row(`Quad ${k}`, quad(a, k), quad(b, k), null))
+  ]
+  const [lead, trail] = a.wab >= b.wab ? [a, b] : [b, a]
+  const oppPow = g => byId.get(g.opp_id)?.prk ?? 999
+  const order = { "Date": (x, y) => x.date.localeCompare(y.date), "Resume ±": (x, y) => y.wab_game - x.wab_game, "Opponent power": (x, y) => oppPow(x) - oppPow(y) }[mResSort]
+  const sortCtl = Inputs.radio(["Date", "Resume ±", "Opponent power"], { label: "Sort games", value: mResSort })
+  sortCtl.addEventListener("input", () => { mutable mResSort = sortCtl.value })
+  const games = d => {
+    const gs = played(d).filter(g => g.wab_game != null).sort(order)
+    return htl.html`<section style="min-width:0">${secH(d.team)}
+      <div class="tbl-wrap"><table class="t"><thead><tr><th>Date</th><th>Opponent<br><span style="font-weight:400">(power rank)</span></th><th>Result</th><th class="n res-t">Resume ±</th></tr></thead>
+      <tbody>${gs.length ? gs.map(g => {
+        const o = byId.get(g.opp_id) ?? { id: g.opp_id, team: g.opp }
+        return htl.html`<tr><td class="muted" style="width:70px">${dayFmt(g.date).replace(/^\w+, /, "")}</td><td>${teamCell(o, `${g.venue === "A" ? "Away" : g.venue === "N" ? "Neutral" : "Home"}${o.prk ? ` · #${o.prk}` : " · non-D1"}`, 24)}</td>
+          <td><strong class=${g.result === "W" ? "up" : "down"}>${g.result} ${g.pts}–${g.opp_pts}${g.ot ? " OT" : ""}</strong></td>
+          <td class="n"><strong style=${{ color: g.wab_game >= 0 ? "var(--res-t)" : "var(--down)" }}>${fmtSigned(g.wab_game, 2)}</strong></td></tr>` })
+        : htl.html`<tr><td colspan="4" class="muted">No games yet</td></tr>`}</tbody></table></div></section>`
+  }
+  return htl.html`<div style="display:flex;flex-direction:column;gap:36px">
+    <section class="faceoff">${mSide(a, "a")}
+      <div class="verdict">${eyebrow("Resume", "var(--res-t)")}
+        <span class="disp">${lead.team} by ${(lead.wab - trail.wab).toFixed(2)}</span>
+        <span style="font-size:15px;color:var(--ink-2)">WAB gap · wins above the last team into the field on the same schedule</span>
+      </div>${mSide(b, "b")}</section>
+    <section class="tape">${tape}</section>
+    <div style="display:flex;flex-direction:column;gap:12px"><div class="ctl seg">${sortCtl}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px 36px">${games(a)}${games(b)}</div></div></div>`
+}
+powerBody = {
   const m = matchup, { a, b } = m
-  const side = (d, cls) => htl.html`<div class=${"side " + cls}>${logo(d.id, 96)}<h2 class="disp">${d.team}</h2>
-    <span style="color:var(--ink-2)">${d.wins ?? 0}–${d.losses ?? 0} · Power #${d.prk}${d.rrk ? ` · Resume #${d.rrk}` : ""}</span></div>`
+  const side = mSide
   const stats = [["Power", "pw", "prk", v => fmtSigned(v), true], ["Offense", "off", "off_rk", v => v.toFixed(1), true],
     ["Defense", "def", "def_rk", v => v.toFixed(1), false], ["Tempo", "tempo", "tempo_rk", v => v.toFixed(1), null], ["Resume", "wab", "rrk", v => fmtSigned(v, 2), true]]
     .filter(([, k]) => a[k] != null && b[k] != null)
@@ -832,10 +907,8 @@ matchupBody = {
         <span style="display:flex;justify-content:space-between;width:100%;font-weight:700"><span class="pow-t">${fmtPct(m.pA)}</span><span class="res-t">${fmtPct(1 - m.pA)}</span></span>
         ${m.ptsA == null ? htl.html`<span style="font-size:15px;color:var(--ink-2)">${m.poss.toFixed(0)} possessions</span>` : htl.html`<span style="font-size:15px;color:var(--ink-2)">Projected score <strong style="color:var(--ink)">${Math.round(m.ptsA)}–${Math.round(m.ptsB)}</strong> · ${m.poss.toFixed(0)} possessions</span>`}
       </div>${side(b, "b")}</section>
-    <section class="tape">${tape}<div class="tape-row"><span class="l">${a.wins ?? 0}–${a.losses ?? 0}</span><span class="eb">Record</span><span class="l">${b.wins ?? 0}–${b.losses ?? 0}</span></div>
-      <p class="note" style="text-align:center">Bold is the better number. Per 100 possessions against an average D1 team; tempo in possessions per 40 minutes.</p></section>
-    <section>${secH("How it could go", htl.html`<span class="note">Final margin, ${a.team} minus ${b.team}. Includes game-day noise and doubt about both ratings.</span>`)}
-      <div class="chart-scroll">${chart}</div></section></div>`
+    <section class="tape">${tape}<div class="tape-row"><span class="l">${a.wins ?? 0}–${a.losses ?? 0}</span><span class="eb">Record</span><span class="l">${b.wins ?? 0}–${b.losses ?? 0}</span></div></section>
+    <section><div class="chart-scroll">${chart}</div></section></div>`
 }
 ```
 
@@ -868,10 +941,10 @@ gamesHeadline = {
   const where = g => g.venue === "N" ? "vs." : "at"
   const flip = pool.filter(isTop).filter(g => Math.sign(gm(g)) !== Math.sign(g.line) && Math.abs(gm(g) - g.line) >= 2)
     .sort((a, b) => Math.abs(gm(b) - b.line) - Math.abs(gm(a) - a.line))[0]
-  if (flip) return `The model and Vegas pick different favorites for ${flip.opp} ${where(flip)} ${flip.team}.`
+  if (flip) return `Model, Vegas split on ${flip.opp} ${where(flip)} ${flip.team}`
   const big = [...pool].sort((a, b) => Math.abs(gm(b) - b.line) - Math.abs(gm(a) - a.line))[0]
-  if (big) return `The model's biggest split with Vegas on ${dayFmt(gamesDay)}: ${big.opp} ${where(big)} ${big.team}, ${Math.abs(gm(big) - big.line).toFixed(1)} points apart.`
-  return gameRows(gamesDay).length ? `${gameRows(gamesDay).length} games on ${dayFmt(gamesDay)}.` : "No games this day."
+  if (big) return `Model ${Math.abs(gm(big) - big.line).toFixed(1)} off Vegas on ${big.opp} ${where(big)} ${big.team}`
+  return gameRows(gamesDay).length ? `${gameRows(gamesDay).length} games on ${dayFmt(gamesDay)}` : "No games this day"
 }
 gamesScorecard = {
   const v = vsVegas
@@ -935,10 +1008,10 @@ gamesBody = {
 ```{ojs}
 //| output: false
 bracketHeadline = {
-  if (!hasOdds) return (snap.n_games ?? 0) > 0 ? "No field odds at this snapshot." : "Bracketology starts once games are played."
+  if (!hasOdds) return (snap.n_games ?? 0) > 0 ? "No field odds at this snapshot" : "Bracketology starts once games are played"
   const lock = proj.field.filter(d => d.p_field >= 0.99).length
   const last = proj.atl.at(-1), first = proj.out[0]
-  return `${lock} teams are all but in. ${last ? `${last.team} holds the last at-large spot (${fmtPct(last.p_field)}); ${first?.team ?? "nobody"} is first out (${fmtPct(first?.p_field)}).` : ""}`
+  return last ? `${last.team} last in, ${first?.team ?? "nobody"} first out` : `${lock} teams all but in`
 }
 bracketTiles = {
   if (!hasOdds) return htl.html``
@@ -980,7 +1053,7 @@ bracketOdds = {
         <td class="n">${fmtPct(d.p_auto)}</td><td class="n hide-xs">${fmtPct(d.p_al)}</td><td class="n">${fmtSigned(d.wab, 2)}</td><td class="n hide-sm">${fmtSigned(d.proj_wab, 1)}</td><td class="n muted hide-sm">${d.rrk ?? "–"}</td></tr>`)] })
   return htl.html`<div><div class="tbl-wrap tbl-box"><table class="t sticky-head"><thead><tr><th>Team</th><th>In the field</th><th class="n">Auto bid</th><th class="n hide-xs">At-large</th><th class="n">WAB now</th><th class="n hide-sm">Proj. WAB</th><th class="n hide-sm">Resume #</th></tr></thead>
     <tbody>${body}</tbody></table></div>
-    <p class="note">Each posterior draw plays out the rest of the regular season and every conference tournament (seeded by the simulated standings, last season's bracket size); the champions take the automatic bids and the best projected WAB among the rest fill the at-large spots. Teams moving up to D1 or under a postseason ban cannot be selected. WAB stands in for the committee, so these are resume-based odds.</p></div>`
+    </div>`
 }
 ```
 
@@ -991,13 +1064,13 @@ bracketOdds = {
 trendsHeadline = {
   const hist0 = R.filter(d => d.s === season && d.w <= snap.w && d.rrk != null)
   const ws = [...new Set(hist0.map(d => d.w))]
-  if (ws.length < 2) return { text: "Trends start after the second snapshot.", id: byPow[0].id }
+  if (ws.length < 2) return { text: "Trends start after the second snapshot", id: byPow[0].id }
   const first = d => histOf(d.id).find(x => x.rrk != null)
   const climb = byRes.slice(0, 10).map(d => ({ d, from: first(d)?.rrk })).filter(x => x.from != null).sort((a, b) => (b.from - b.d.rrk) - (a.from - a.d.rrk))[0]
-  let t = `${climb.d.team} climbed from ${ord(climb.from)} to ${ord(climb.d.rrk)} since the first snapshot.`
+  let t = `${climb.d.team} up from ${ord(climb.from)} to ${ord(climb.d.rrk)} since the first snapshot`
   const fall = [...prevRows.values()].filter(p => p.rrk <= 10 && byId.get(p.id)).map(p => ({ d: byId.get(p.id), from: p.rrk }))
     .sort((a, b) => (b.d.rrk - b.from) - (a.d.rrk - a.from))[0]
-  if (fall && fall.d.rrk - fall.from >= 5) t += ` ${fall.d.team} fell from ${ord(fall.from)} to ${ord(fall.d.rrk)} since the last one.`
+  if (fall && fall.d.rrk - fall.from >= 5) t += `; ${fall.d.team} drops ${fall.d.rrk - fall.from}`
   return { text: t, id: climb.d.id }
 }
 trendsChart = {
@@ -1037,12 +1110,12 @@ trendsChart = {
 ```{ojs}
 //| output: false
 rvpHeadline = {
-  if (!hasResume) return "Resume rankings start after the first games."
+  if (!hasResume) return "Resume rankings start after the first games"
   const gap = byPow.slice(0, 8).filter(d => d.rrk - d.prk >= 12)[0]
-  if (gap) return `${gap.team} plays like a top-${Math.max(5, gap.prk)} team. Its resume says ${ord(gap.rrk)}.`
+  if (gap) return `${gap.team}: ${ord(gap.prk)} in power, ${ord(gap.rrk)} on resume`
   const rev = byRes.slice(0, 8).filter(d => d.prk - d.rrk >= 12)[0]
-  if (rev) return `${rev.team} is No. ${rev.rrk} on resume. Its play rates ${ord(rev.prk)}.`
-  return "Resume and power agree at the top."
+  if (rev) return `${rev.team}: ${ord(rev.rrk)} on resume, ${ord(rev.prk)} in power`
+  return "Resume, power agree at the top"
 }
 // Label placement in the spirit of ggrepel: each label tries spots around its dot, nearest
 // first, then rings further out, and takes the first that clears the plot edges, every label
@@ -1126,8 +1199,8 @@ confHeadline = {
   const t = confRows[0]
   if (!t || t.p_reg == null) return `${raceConf}`
   const tt = [...confRows].sort((a, b) => (b.p_auto ?? 0) - (a.p_auto ?? 0))[0]
-  return t.id === tt.id ? `${t.team} is the ${raceConf} favorite: ${fmtPct(t.p_reg)} for the regular-season title, ${fmtPct(t.p_auto)} for the tournament.`
-    : `${t.team} leads the ${raceConf} regular-season race (${fmtPct(t.p_reg)}); ${tt.team} is the tournament favorite (${fmtPct(tt.p_auto)}).`
+  return t.id === tt.id ? `${t.team} ${fmtPct(t.p_reg)} to win the ${raceConf}`
+    : `${t.team} leads the ${raceConf} race; ${tt.team} tournament favorite`
 }
 confBody = {
   if (!confRows.length) return htl.html``
@@ -1151,11 +1224,10 @@ confBody = {
 ```{ojs}
 //| output: false
 pollsHeadline = {
-  if (!d1.some(d => d.ap != null)) return "No AP poll for this snapshot."
-  if (!hasResume) return "The preseason polls are in. Resume rankings start after the first games."
+  if (!d1.some(d => d.ap != null)) return "No AP poll for this snapshot"
+  if (!hasResume) return "Preseason polls are in"
   const top = byRes.slice(0, 25), shared = top.filter(d => d.ap != null && d.ap <= 25).length
-  const out = top.filter(d => d.ap == null || d.ap > 25).map(d => d.team)
-  return `The AP poll and the resume share ${shared} of their top 25.` + (out.length && out.length <= 4 ? ` The other ${out.length === 1 ? "one is" : `${out.length} are`} ${listAnd(out)}.` : "")
+  return `AP poll, resume share ${shared} of top 25`
 }
 pollsBody = {
   const games = G.filter(d => d.s === season && d.conf_game && d.result != null && d.date < snap.date && !d.tourn)
