@@ -12,6 +12,11 @@ margins, roster prior) finished 2026-10-25. Phases 1–5 are done, 6 waits on th
 2. Optional: serve the dashboard and reports on the tailnet (stopped 2026-10-30). Install the docs
    server (`scripts/com.cbb-rankings.docs-server.plist`, install lines in its header, including
    the `tailscale serve --set-path /cbb` line) → https://thomas-mac-studio.tail4e3149.ts.net/cbb/
+3. Decide whether to re-pool the hierarchy priors: the paper's all-vague refits pool to
+   omega N(1.05, 0.16), tau N(4.01, 0.10), phi N(0.56, 0.05), hca N(4.46, 0.27) against the published
+   N(1.48, 0.20), N(4.27, 0.35), N(0.56, 0.10), N(4.50, 0.40) (`tar_read(pooled_priors)`). The
+   perturbation refits move final ratings by at most 0.4 per 100, but adopting them means a full
+   rebuild (~1 h 45 m)
 
 Waiting on the season or outside input:
 - Injuries: decide around 2026-11-16 whether ESPN's report is filled enough to use (absences are
@@ -19,9 +24,10 @@ Waiting on the season or outside input:
 - Live availability adjustment: depends on the injuries decision
 - 2026-27 daily runs from opening night (2026-11-02); 2027 season retro after the final
 - NET quadrants and NET rank comparison: need a cbbdata account (`CBD_USER` / `CBD_PW`)
-- Methods paper: later
 
 ## Done
+
+- [x] Methods paper 2026-11-03 (`paper/cbb-paper.qmd` → `paper/cbb-paper.pdf`), modelled on the CFB paper; every number read from the store. Analyses in `R/08_analysis.R`, built only with `CBB_PAPER=1` (about 3 h: ablation 1 h 30 m, final fits 38 m, prior sensitivity 10 m, vague-prior refits 13 m, SBC 8 m, selection refits 8 m). `stan/power.stan` now takes every prior as data and stores `lprior`, joint `log_lik` and `log_lik_margin` when asked; the rebuild reproduced all 278 published snapshots exactly. Findings: efficiency signal worth +0.041 MAE / +2.2e-3 log loss over margin-only (2023–26), +61 elpd a season; Student-t better by LOO in every season but not in the backtest; the luck-adjusted margin is indistinguishable on MAE from pure shot quality but better on log loss; static ratings worse on log loss; WAB's at-large picks include 368 of the committee's 399 (power 325); LOSO priors leak nothing measurable; SBC coverage 78–88%, WAB rank histogram not uniform at 1%
 
 - [x] CFB dashboard changes of 2026-11-01 ported 2026-11-03: matchup Power / Resume view (WAB, rank range, field odds, SOR, schedule, quadrant records, both teams' games), "Compare with…" from the team sheet, schedule lines from the team's side (negative = favored), shorter headlines and notes, smaller lede type. CFB's projected-field fix was already how `proj` works here; the week labels don't apply (dates)
 
@@ -133,4 +139,4 @@ Waiting on the season or outside input:
 - [x] Quarto + Observable JS dashboard (`docs/dashboard.qmd` → `docs/index.html`, `dashboard_data` + `tar_quarto` targets): all nine tabs checked in headless Chrome on dev data (2026-27 preseason, 2025-26 final); first pipeline render 2026-10-25
 - [x] `check_build.R` (errored targets, gates, freshness, coverage, membership, venues, missing games, player tables, injury archive, backtest vs line and Torvik, totals, shot calibration, prior sources, field odds, dashboard freshness)
 - [x] Reports: `docs/reports/season_retro.qmd`, `model_diagnostics.qmd` (`tar_quarto` targets; first rendered by the 2026-10-25 rebuild)
-- [ ] Methods paper (later)
+- [x] Methods paper (`paper/`, 2026-11-03)

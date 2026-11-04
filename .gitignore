@@ -19,3 +19,8 @@ pilot/out/variants/*.log
 pilot/out/variants/power
 pilot/out/variants/power.stan
 pilot/out/variants/games_*.rds
+
+# paper render intermediates (the PDF is kept)
+paper/*_files/
+paper/*.tex
+paper/*.log

@@ -19,6 +19,9 @@
 #   -> snapshots -> backtest (vs the closing line and total, and Torvik), coverage, venues (recoded /
 #      disputed sites), shot_calibration (make model by family and season)
 #   -> dashboard_data -> docs/index.html (docs/dashboard.qmd) and the reports in docs/reports/
+#   With CBB_PAPER=1 only: the analyses of R/08_analysis.R on the complete seasons (refits under
+#   other priors and model variants, checks, SBC; several hours) -> paper/cbb-paper.qmd. The daily
+#   build leaves them out; their stored results stay until they are rebuilt.
 #
 # Seasons: PRIOR_SEASON (CBB_FIRST_SEASON - 1) is fit once, at its end, for the carry-over;
 # CBB_FIRST_SEASON (default 2015) through CBB_LAST_SEASON (default the current season) get every
@@ -47,6 +50,10 @@ MAX_SNAPS <- as.integer(Sys.getenv("CBB_MAX_SNAPS", "0"))
 PRIOR_SEASON <- FIRST_SEASON - 1L
 SEASONS <- PRIOR_SEASON:LAST_SEASON
 DB_PATH <- "data/cbb.duckdb"
+PAPER <- Sys.getenv("CBB_PAPER") == "1"
+LAST_FULL <- max(SEASONS[season_final(SEASONS)])      # the last season whose postseason is over
+COMPLETE <- FIRST_SEASON:LAST_FULL
+ABLATION_SEASONS <- (LAST_FULL - 3L):LAST_FULL
 
 sym <- function(x, s) as.symbol(paste0(x, "_", s))
 data_list <- function(seasons, field) {
@@ -91,6 +98,56 @@ season_targets <- function(s) {
   )
 }
 
+# A season's kit (R/08_analysis.R): what snapshot_input() needs to rebuild its snapshots
+kit_call <- function(s) call("season_kit", s, sym("games", s), sym("dates", s), sym("teams", s), sym("prior", s),
+                             sym("champs", s), sym("tourney", s))
+kits_call <- function(seasons) as.call(c(quote(list), setNames(lapply(seasons, kit_call), seasons)))
+outcomes_call <- function(seasons) as.call(c(quote(dplyr::bind_rows), lapply(seasons, \(s) call("game_outcomes", sym("games", s)))))
+
+# The paper's analyses (R/08_analysis.R). Fitting targets fork their own fits (`workers`), so they
+# run in the main process, one at a time; fits of 4 chains run FIT_WORKERS at once, of 2 twice that.
+paper_targets <- list(
+  tar_target(last_full, LAST_FULL),
+  tar_target_raw("outcomes_complete", outcomes_call(COMPLETE)),
+  tar_target_raw("final_fits", bquote(run_final_fits(.(kits_call(COMPLETE)), cfg, workers = FIT_WORKERS)), deployment = "main"),
+  tar_target(final_compare, compare_final_fits(final_fits)),
+  tar_target_raw("prior_refits", bquote(run_prior_refits(.(kits_call(COMPLETE)), cfg, workers = FIT_WORKERS)), deployment = "main"),
+  tar_target(pooled_priors, pool_priors(prior_refits)),
+  tar_target(prior_loso_check, loso_prior_check(prior_refits)),
+  tar_target_raw("loso_backtest", bquote(run_loso_backtest(.(kits_call(COMPLETE)), prior_refits, cfg, workers = FIT_WORKERS)),
+                 deployment = "main"),
+  tar_target(loso_scores, score_predictions(loso_backtest, outcomes_complete)),
+  tar_target_raw("ablation", bquote(run_ablation(.(kits_call(ABLATION_SEASONS)), cfg, workers = 2L * FIT_WORKERS)), deployment = "main"),
+  tar_target(ablation_scores, score_predictions(ablation, outcomes_complete)),
+  tar_target_raw("baselines", bquote(run_baselines(.(kits_call(COMPLETE)), cfg))),
+  tar_target(baseline_scores, score_predictions(baselines, outcomes_complete)),
+  tar_target_raw("selection_refits", bquote(run_selection_refits(.(kits_call(COMPLETE)), cfg, workers = FIT_WORKERS)),
+                 deployment = "main"),
+  tar_target_raw("margin_leakage", bquote(run_margin_leakage(.(kit_call(LAST_FULL)), cfg, workers = FIT_WORKERS)), deployment = "main"),
+  tar_target_raw("sbc", bquote({
+    kit <- .(kit_call(LAST_FULL))
+    run_sbc(kit_input(kit, kit_index(kit, "weekly")[4], cfg), cfg, workers = 2L * FIT_WORKERS)
+  }), deployment = "main"),
+  tar_target_raw("supplement", bquote(run_supplement(.(kit_call(LAST_FULL)), cfg, workers = 2L)), deployment = "main"),
+  tar_target_raw("prior_sensitivity", bquote(run_prior_sensitivity(.(kit_call(LAST_FULL)), cfg, workers = FIT_WORKERS)),
+                 deployment = "main"),
+  tar_target_raw("induced_prior", bquote({
+    kit <- .(kit_call(LAST_FULL))
+    induced_priors(kit_input(kit, nrow(kit$dates), cfg), cfg)
+  })),
+  tar_target_raw("resume_check", bquote(resume_validation(snapshots, .(kits_call(COMPLETE))))),
+  tar_target_raw("preseason_sources", bquote(preseason_eval(.(kits_call(COMPLETE)), snapshots))),
+  tar_target_raw("schedule_graph", bquote(schedule_components(.(kits_call(COMPLETE))))),
+  tar_target(backtest_summary, backtest_stats(backtest, COMPLETE)),
+  # Torvik's ratings at each complete season's final snapshot
+  tar_target_raw("external_ratings", bquote({
+    tv <- .(as.call(c(quote(dplyr::bind_rows), lapply(COMPLETE, \(s) sym("torvik", s)))))
+    tv[tv$snap_date == stats::ave(tv$snap_date, tv$season, FUN = max), ]
+  })),
+  tar_target_raw("data_hashes", bquote(data_fingerprint(.(kits_call(COMPLETE))))),
+  tar_quarto(paper, path = "paper/cbb-paper.qmd", quiet = TRUE)
+)
+
 list(
   tar_target(stan_file, "stan/power.stan", format = "file"),
   tar_target(torvik_names, "data/torvik_names.csv", format = "file"),
@@ -132,5 +189,6 @@ list(
   tar_quarto(dashboard, path = "docs/dashboard.qmd", quiet = TRUE,
              extra_files = c("docs/styles/cbb.css", "docs/logos/TRlogo.svg", "docs/logos/TRlogo-dark.svg")),
   tar_quarto(report_season, path = "docs/reports/season_retro.qmd", quiet = TRUE),
-  tar_quarto(report_diagnostics, path = "docs/reports/model_diagnostics.qmd", quiet = TRUE)
+  tar_quarto(report_diagnostics, path = "docs/reports/model_diagnostics.qmd", quiet = TRUE),
+  if (PAPER) paper_targets
 )

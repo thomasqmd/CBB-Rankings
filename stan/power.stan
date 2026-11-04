@@ -27,7 +27,9 @@
 // Options tested by backtest (pilot/out/12_variants.md; R's model_config() sets the defaults:
 // use_prev2 on, normal margins): use_prev2 adds b_prev2 * the rating two seasons back to r0; team_hca gives each team its own home edge, hca + sigma_hca * z (shrunk to the season's);
 // margin_family 1 = Student-t, 2 = normal, 3 = contaminated normal (share p_out with scale k_out
-// times sigma); save_loglik stores each D1 game's margin log density (for LOO).
+// times sigma); save_loglik stores each D1 game's log density (for LOO). Every prior's
+// parameters are data (model_config() holds the published values); lprior is their joint log
+// density, for power-scaling sensitivity.
 // =============================================================================
 
 functions {
@@ -102,6 +104,21 @@ data {
   vector[2] sigma_team_prior;
   vector[2] tau_prior;
   vector[2] hca_prior;
+  // (mean, sd) of the normal priors on the other structural parameters; nu ~ Gamma(nu_prior),
+  // p_out ~ Beta(p_out_prior)
+  vector[2] b_prev_prior;
+  vector[2] b_conf_prior;
+  vector[2] b_prev2_prior;
+  vector[2] sigma_m_prior;
+  vector[2] nu_prior;
+  vector[2] p_out_prior;
+  vector[2] k_out_prior;
+  vector[2] sigma_hca_prior;
+  vector[2] lambda_prior;
+  vector[2] sigma_eff_prior;
+  vector[2] kappa_prior;
+  vector[2] r_nd_prior;
+  vector[2] sigma_nd_prior;
 
   int<lower=0, upper=1> use_prev2;
   vector[N_teams] prev2_dev;                    // rating two seasons back (0 when unknown)
@@ -186,24 +203,24 @@ transformed parameters {
 model {
   sigma_conf ~ normal(sigma_conf_prior[1], sigma_conf_prior[2]);
   sigma_team ~ normal(sigma_team_prior[1], sigma_team_prior[2]);
-  b_prev ~ normal(0.7, 0.2);
-  b_conf_raw ~ normal(0.8, 0.3);
+  b_prev ~ normal(b_prev_prior[1], b_prev_prior[2]);
+  b_conf_raw ~ normal(b_conf_prior[1], b_conf_prior[2]);
   hca ~ normal(hca_prior[1], hca_prior[2]);
-  sigma_m ~ normal(14, 5);
-  nu_raw ~ gamma(2, 0.1);
-  p_out_raw ~ beta(2, 20);
-  k_out_raw ~ normal(2.5, 1);
-  b_prev2_raw ~ normal(0.2, 0.2);
-  sigma_hca_raw ~ normal(0, 1);
+  sigma_m ~ normal(sigma_m_prior[1], sigma_m_prior[2]);
+  nu_raw ~ gamma(nu_prior[1], nu_prior[2]);
+  p_out_raw ~ beta(p_out_prior[1], p_out_prior[2]);
+  k_out_raw ~ normal(k_out_prior[1], k_out_prior[2]);
+  b_prev2_raw ~ normal(b_prev2_prior[1], b_prev2_prior[2]);
+  sigma_hca_raw ~ normal(sigma_hca_prior[1], sigma_hca_prior[2]);
   hca_z ~ std_normal();
   tau_raw ~ normal(tau_prior[1], tau_prior[2]);
-  lambda_raw ~ normal(0.7, 0.3);
-  sigma_eff_raw ~ normal(12, 5);
-  kappa_raw ~ normal(0.5, 0.5);
+  lambda_raw ~ normal(lambda_prior[1], lambda_prior[2]);
+  sigma_eff_raw ~ normal(sigma_eff_prior[1], sigma_eff_prior[2]);
+  kappa_raw ~ normal(kappa_prior[1], kappa_prior[2]);
   conf_raw ~ std_normal();
   if (conf_centred) mu_conf_c ~ normal(b_conf * prev_conf, sigma_conf);
-  r_nd_raw ~ normal(-25, 10);
-  sigma_nd_raw ~ normal(10, 5);
+  r_nd_raw ~ normal(r_nd_prior[1], r_nd_prior[2]);
+  sigma_nd_raw ~ normal(sigma_nd_prior[1], sigma_nd_prior[2]);
   z ~ std_normal();
   eps ~ std_normal();
 
@@ -228,12 +245,40 @@ generated quantities {
   vector[N_teams] r;
   // Marginal sd of a game's margin per 100 at w = 1 (for win probabilities)
   real sigma_game = sqrt(square(sigma_m) + square(kappa * sigma_eff));
+  // Each D1 game's log density: log_lik the game's whole contribution (efficiency, then the
+  // margin given it), log_lik_margin the margin's marginal law alone (comparable across models
+  // with and without the efficiency signal)
   vector[save_loglik ? N_games : 0] log_lik;
+  vector[save_loglik ? N_games : 0] log_lik_margin;
   if (save_loglik && N_games > 0) {
     vector[N_games] mu = r_state[home_state] - r_state[away_state] + hca_team[host] .* home_adv;
     matrix[N_games, 2] mm = margin_moments(mu, eff, idx_eff, idx_noeff, sw_m, sw_e, lambda, kappa, sigma_m, sigma_eff);
     log_lik = margin_pointwise(margin, mm[:, 1], mm[:, 2], margin_family, nu, p_out, k_out);
+    for (k in idx_eff) log_lik[k] += normal_lpdf(eff[k] | lambda * mu[k], sigma_eff / sw_e[k]);
+    array[0] int none;
+    matrix[N_games, 2] mo = margin_moments(mu, eff, none, linspaced_int_array(N_games, 1, N_games), sw_m, sw_e,
+                                           lambda, kappa, sigma_m, sigma_eff);
+    log_lik_margin = margin_pointwise(margin, mo[:, 1], mo[:, 2], margin_family, nu, p_out, k_out);
   }
+  // Joint log density of the structural priors (priorsense power-scales it); the hierarchical
+  // standard normals (z, eps, conf_raw, hca_z) are part of the model, not the prior
+  real lprior = normal_lpdf(sigma_conf | sigma_conf_prior[1], sigma_conf_prior[2])
+                + normal_lpdf(sigma_team | sigma_team_prior[1], sigma_team_prior[2])
+                + normal_lpdf(b_prev | b_prev_prior[1], b_prev_prior[2])
+                + normal_lpdf(b_conf_raw | b_conf_prior[1], b_conf_prior[2])
+                + normal_lpdf(b_prev2_raw | b_prev2_prior[1], b_prev2_prior[2])
+                + normal_lpdf(hca | hca_prior[1], hca_prior[2])
+                + normal_lpdf(sigma_m | sigma_m_prior[1], sigma_m_prior[2])
+                + gamma_lpdf(nu_raw | nu_prior[1], nu_prior[2])
+                + beta_lpdf(p_out_raw | p_out_prior[1], p_out_prior[2])
+                + normal_lpdf(k_out_raw | k_out_prior[1], k_out_prior[2])
+                + normal_lpdf(sigma_hca_raw | sigma_hca_prior[1], sigma_hca_prior[2])
+                + normal_lpdf(tau_raw | tau_prior[1], tau_prior[2])
+                + normal_lpdf(lambda_raw | lambda_prior[1], lambda_prior[2])
+                + normal_lpdf(sigma_eff_raw | sigma_eff_prior[1], sigma_eff_prior[2])
+                + normal_lpdf(kappa_raw | kappa_prior[1], kappa_prior[2])
+                + normal_lpdf(r_nd_raw | r_nd_prior[1], r_nd_prior[2])
+                + normal_lpdf(sigma_nd_raw | sigma_nd_prior[1], sigma_nd_prior[2]);
   for (i in 1:N_teams) {
     r[i] = now_state[i] == 0 ? r0[i] : r_state[now_state[i]];
     if (dynamic) r[i] += tau * sqrt(now_gap[i]) * normal_rng(0, 1);

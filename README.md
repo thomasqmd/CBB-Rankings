@@ -94,6 +94,8 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.injurie
 | `R/05_snapshot.R` | Snapshot dates, one snapshot's outputs, backtest (margins, win probabilities, totals), coverage report |
 | `R/06_roster.R` | Torvik player tables and CBBD recruits → roster features (returning, transfers, freshmen) and the roster prior regression |
 | `R/07_dashboard.R` | `build_dashboard_data()`: compact tables for the dashboard |
+| `R/08_analysis.R` | The methods paper's analyses (built with `CBB_PAPER=1` only): final-snapshot checks (PPC, priorsense, LOO, margin families), vague-prior refits and pooled priors, leave-one-season-out priors, ablations, least-squares baseline, Selection Monday refits (benchmark choice, SOR, MCSE), margin leakage, SBC, full-draw supplement, prior perturbation, induced priors, resume vs. committee |
+| `paper/cbb-paper.qmd` | Methods paper (PDF), the CFB paper's structure for basketball; every number read from the store |
 | `docs/dashboard.qmd` | Quarto + Observable JS dashboard → `docs/index.html` (styles in `docs/styles/cbb.css`) |
 | `docs/reports/` | `season_retro.qmd`, `model_diagnostics.qmd` (rendered by the pipeline) |
 | `data/postseason_bans.csv` | NCAA postseason bans (team, season), hand-kept |
@@ -103,7 +105,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.injurie
 | `scripts/poll_injuries.sh` | Daily ESPN injury report archive (launchd: `scripts/com.cbb-rankings.injuries.plist`) |
 | `renv.lock` | Package versions, restored into the user library (the project is not renv-activated) |
 | `tests/testthat/` | Unit tests (`Rscript -e 'testthat::test_dir("tests/testthat")'`) |
-| `stan/power.stan` | Power model (switches: `use_eff`, `dynamic`, `conf_carry`, `conf_centred`, non-D1 games via `N_nd`) |
+| `stan/power.stan` | Power model (switches: `use_eff`, `dynamic`, `conf_carry`, `conf_centred`, non-D1 games via `N_nd`; every prior's parameters are data from `model_config()`; `lprior` and, with `save_loglik`, each game's log density for priorsense and LOO) |
 | `pilot/0*.R` | Pilot scripts, run in order; each writes a report to `pilot/out/` |
 | `pilot/conv/*.R` | Convergence, non-D1 and preseason-prior experiments (report: `pilot/out/07_convergence.md`) |
 | `pilot/exh_scraper.R`, `pilot/07_exhibitions.R` | Parked exhibition scraper (school sites; report: `pilot/out/08_exhibitions.md`) |
@@ -127,8 +129,12 @@ sync (ESPN + CBBD + Torvik → data/cbb.duckdb)
 CBB_FIRST_SEASON=2026 CBB_MAX_SNAPS=3 Rscript -e 'targets::tar_make()'   # quick test build (~10 min)
 Rscript -e 'targets::tar_make()'                                          # full build, 2014 (prior only) to the current season
 Rscript check_build.R
+CBB_PAPER=1 Rscript -e 'targets::tar_make()'                             # + the methods paper's analyses and the paper
 ```
 
+- `CBB_PAPER=1` adds the paper's analysis targets and the paper (`paper/cbb-paper.pdf`): several hours
+  on 16 cores after the published fits. The daily build leaves it unset, so it never runs them;
+  their results stay in the store until rebuilt.
 - `CBB_FIRST_SEASON` (default 2015; the season before it is fit once, at its end, for the
   carry-over), `CBB_LAST_SEASON` (default current), `CBB_MAX_SNAPS` (development: opening night
   plus the last n − 1 snapshots), `CBB_CORES`.

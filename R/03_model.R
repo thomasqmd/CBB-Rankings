@@ -23,6 +23,12 @@ model_config <- function(...) {
     # home edge per 100 possessions: pooled from the final fits (pilot/out/12_variants.md); 2021's
     # limited-attendance season has its own
     hca_prior = c(4.5, 0.4), hca_prior_season = list("2021" = c(3, 0.5)),
+    # weakly informative priors on the rest, on the scale of the sport: (mean, sd) of a normal;
+    # nu ~ Gamma(shape, rate), p_out ~ Beta(a, b)
+    b_prev_prior = c(0.7, 0.2), b_conf_prior = c(0.8, 0.3), b_prev2_prior = c(0.2, 0.2),
+    sigma_m_prior = c(14, 5), nu_prior = c(2, 0.1), p_out_prior = c(2, 20), k_out_prior = c(2.5, 1),
+    sigma_hca_prior = c(0, 1), lambda_prior = c(0.7, 0.3), sigma_eff_prior = c(12, 5), kappa_prior = c(0.5, 0.5),
+    r_nd_prior = c(-25, 10), sigma_nd_prior = c(10, 5),
     use_prev2 = TRUE,            # add the rating two seasons back to the preseason level (b_prev2)
     team_hca = FALSE,            # each team's own home edge, shrunk to the season's
     margin_family = 2L,          # 1 Student-t, 2 normal (backtest: better than t), 3 contaminated normal
@@ -37,6 +43,11 @@ model_config <- function(...) {
     snap_every = 7               # days between historical snapshots (Mondays)
   ), list(...))
 }
+
+# The prior settings model_config() passes to Stan as they are (the hierarchy scales, the drift
+# and home court are listed in prepare_input())
+PRIOR_FIELDS <- c("b_prev_prior", "b_conf_prior", "b_prev2_prior", "sigma_m_prior", "nu_prior", "p_out_prior", "k_out_prior",
+                  "sigma_hca_prior", "lambda_prior", "sigma_eff_prior", "kappa_prior", "r_nd_prior", "sigma_nd_prior")
 
 season_hca_prior <- function(games, cfg) {
   s <- if (is.null(games$season)) NULL else as.character(games$season[1])
@@ -133,10 +144,11 @@ prepare_input <- function(games, snap_date, teams, prev = NULL, cfg = model_conf
       use_eff = as.integer(cfg$use_eff), dynamic = as.integer(cfg$dynamic),
       conf_centred = as.integer(isTRUE(cfg$conf_centred)),
       sigma_conf_prior = cfg$sigma_conf_prior, sigma_team_prior = cfg$sigma_team_prior, tau_prior = cfg$tau_prior,
-      hca_prior = season_hca_prior(games, cfg), use_prev2 = as.integer(isTRUE(cfg$use_prev2)), prev2_dev = teams$prev2_dev,
+      hca_prior = season_hca_prior(games, cfg),
+      use_prev2 = as.integer(isTRUE(cfg$use_prev2)), prev2_dev = teams$prev2_dev,
       team_hca = as.integer(isTRUE(cfg$team_hca)), margin_family = as.integer(cfg$margin_family),
       save_loglik = as.integer(isTRUE(cfg$save_loglik))
-    ) |> c(nd_list),
+    ) |> c(cfg[PRIOR_FIELDS], nd_list),
     teams = teams, games = g, upcoming = upcoming, remaining = remaining, snap_date = snap_date, tempo = tempo_model(g, teams, snap_date)
   )
 }
@@ -196,18 +208,30 @@ tempo_model <- function(g, teams, snap_date = NULL) {
   out
 }
 
-fit_snapshot <- function(inp, cfg = model_config()) {
+# The CmdStan fit of one input (sample_power) and its summaries (fit_snapshot). seed: cfg$seed
+# unless given.
+sample_power <- function(inp, cfg = model_config(), seed = cfg$seed) {
   mod <- cmdstanr::cmdstan_model(cfg$stan_file, quiet = TRUE)
-  t0 <- Sys.time()
-  fit <- mod$sample(data = inp$stan, chains = cfg$chains, parallel_chains = cfg$chains,
-                    iter_warmup = cfg$warmup, iter_sampling = cfg$sampling,
-                    adapt_delta = cfg$adapt_delta, seed = cfg$seed, refresh = 0, show_messages = FALSE)
-  secs <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+  mod$sample(data = inp$stan, chains = cfg$chains, parallel_chains = cfg$chains,
+             iter_warmup = cfg$warmup, iter_sampling = cfg$sampling,
+             adapt_delta = cfg$adapt_delta, seed = seed, refresh = 0, show_messages = FALSE)
+}
+
+# The structural parameters a fit reports under cfg's switches (sigma_game derived)
+model_pars <- function(cfg) {
   pars <- c("hca", "sigma_m", "nu", "sigma_team", "sigma_conf", "b_prev", "tau", "lambda", "sigma_eff", "kappa", "sigma_game")
   if (isTRUE(cfg$conf_carry)) pars <- c(pars, "b_conf")
   if (isTRUE(cfg$use_prev2)) pars <- c(pars, "b_prev2")
   if (isTRUE(cfg$team_hca)) pars <- c(pars, "sigma_hca")
   if (cfg$margin_family == 3) pars <- c(pars, "p_out", "k_out")
+  pars
+}
+
+fit_snapshot <- function(inp, cfg = model_config(), fit = NULL, seed = cfg$seed) {
+  t0 <- Sys.time()
+  if (is.null(fit)) fit <- sample_power(inp, cfg, seed)
+  secs <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+  pars <- model_pars(cfg)
   draws <- posterior::as_draws_matrix(fit$draws(c("r", pars)))
   r <- draws[, grep("^r\\[", colnames(draws)), drop = FALSE]
   r <- r - rowMeans(r)                                  # D1 average = 0 in every draw
