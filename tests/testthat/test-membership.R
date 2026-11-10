@@ -21,6 +21,31 @@ test_that("season teams: listed teams without games drop out of a final season, 
   expect_true(9L %in% t$team_id)
 })
 
+test_that("conferences come from ESPN's D1 list; a side not on it makes the game non-D1", {
+  d1 <- data.frame(team_id = 1:3, team = c("A", "B", "C"), conf = c("X", "X", "Y"), eligible = TRUE)
+  g <- data.frame(home_id = c(1L, 1L, 3L), away_id = c(2L, 9L, 1L), home_conf = c("X", "X", NA), away_conf = c("X", "Big Ten", "X"), division = "d1")
+  out <- conf_from_d1(g, d1)
+  expect_equal(out$home_conf, c("X", "X", "Y"))
+  expect_equal(out$away_conf, c("X", NA, "X"))
+  expect_equal(out$division, c("d1", "nond1", "d1"))
+  expect_identical(conf_from_d1(g, NULL), g)
+})
+
+test_that("CBBD records are oriented to ESPN's sides by team, points by the final score", {
+  ids <- data.frame(cbbd_team_id = c(10L, 20L, 30L), team_id = c(1L, 2L, 3L))
+  g <- data.frame(home_id = c(1L, 1L, 1L), away_id = c(2L, 2L, 9L),
+                  cb_home_id = c(10L, 20L, 10L), cb_away_id = c(20L, 10L, 30L),       # same, swapped, away side another team
+                  home_conf = c("X", "Y", "X"), away_conf = c("Y", "X", "Z"), home_seed = NA_integer_, away_seed = NA_integer_,
+                  line_home_id = c(10L, 20L, 10L), spread = c(-3, 3, -5), total_line = 140,
+                  home_score = c(70L, 70L, 80L), away_score = c(60L, 60L, 50L), cb_home_pts = c(70L, 60L, 80L), cb_away_pts = c(60L, 70L, 50L),
+                  home_reg = c(70, 60, 80), away_reg = c(60, 70, 50))
+  out <- orient_cbbd(g, ids)
+  expect_equal(out$home_conf, c("X", "X", "X")); expect_equal(out$away_conf, c("Y", "Y", NA))
+  expect_equal(out$spread, c(-3, -3, NA))
+  expect_equal(out$home_reg, c(70, 70, 80)); expect_equal(out$away_reg, c(60, 60, 50))
+  expect_false("cb_home_id" %in% names(out))
+})
+
 test_that("an ineligible champion leaves the automatic bid to the eligible standings leader", {
   teams <- data.frame(team_id = 1:3, team = c("A", "B", "C"), conf = "X", eligible = c(FALSE, TRUE, TRUE))
   g <- data.frame(home_id = c(1L, 2L, 1L), away_id = c(2L, 3L, 3L), home_conf = "X", away_conf = "X",

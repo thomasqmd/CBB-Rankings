@@ -85,16 +85,18 @@ combine_snapshots <- function(..., polls = NULL) {
        params = pick("params"), gates = pick("gates"), polls = polls)
 }
 
-# Each poll release goes to the snapshot on or just before its date (preseason polls, released
-# before opening night, to the first snapshot); when several releases of one poll land on a
-# snapshot, the latest is kept
+# Every snapshot carries each poll's latest release on or before its date, so a poll stays on
+# the snapshots after it until the next release (preseason polls, released before opening night,
+# also go to any snapshot before them)
 match_polls <- function(polls, dates) {
   if (is.null(polls) || !nrow(polls)) return(NULL)
-  snaps <- sort(dates$snap_date)
-  i <- findInterval(as.numeric(polls$poll_date), as.numeric(snaps))
-  polls$snap_date <- snaps[pmax(i, 1L)]
-  latest <- stats::ave(as.numeric(polls$poll_date), polls$snap_date, polls$poll, FUN = max)
-  out <- polls[as.numeric(polls$poll_date) == latest, ]
+  snaps <- sort(unique(dates$snap_date))
+  out <- do.call(rbind, lapply(split(polls, polls$poll), function(p) {
+    rel <- sort(unique(p$poll_date))
+    pick <- rel[pmax(findInterval(as.numeric(snaps), as.numeric(rel)), 1L)]
+    do.call(rbind, lapply(seq_along(snaps), \(k) cbind(snap_date = snaps[k], p[p$poll_date == pick[k], ])))
+  }))
+  rownames(out) <- NULL
   out[, c("season", "snap_date", setdiff(names(out), c("season", "snap_date")))]
 }
 

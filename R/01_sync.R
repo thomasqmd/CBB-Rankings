@@ -45,14 +45,13 @@ sync_season <- function(con, season, today = Sys.Date()) {
   files <- fetch_espn(season, c("schedule", "team_box", "player_box", "pbp", if (season >= ROSTERS_FROM) "rosters"))
   fetch_cbbd(season, today = today)
   games <- build_games(season)
-  db_replace_season(con, "games", games, season)
-
   gt <- team_conferences(games)
   d1 <- d1_teams_table(season, fetch_espn_d1(season, today), gt[, c("team_id", "team")], gt)
   nm <- rbind(data.frame(team_id = games$home_id, team = games$home), data.frame(team_id = games$away_id, team = games$away))
   d1$team <- dplyr::coalesce(d1$team, nm$team[match(d1$team_id, nm$team_id)])
   if (anyNA(d1$team)) d1$team[is.na(d1$team)] <- espn_team_name(season, d1$team_id[is.na(d1$team)])
   db_replace_season(con, "d1_teams", d1, season)
+  db_replace_season(con, "games", conf_from_d1(games, d1), season)   # conferences by team, not by CBBD record
 
   if (!is.na(files[["player_box"]])) db_replace_season(con, "player_box", player_box_table(season, games$game_id), season)
   if (!is.na(files["rosters"])) db_replace_season(con, "rosters", rosters_table(season), season)

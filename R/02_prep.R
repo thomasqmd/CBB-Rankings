@@ -25,7 +25,7 @@ FT_SHRINK <- 40                                                                 
 SHOT_MODEL_SEASONS <- 2                                                           # earlier seasons per shot model
 MIN_FAMILY_SHOTS <- 500                                                           # rarer families fold into "jumper"
 # Bump when parsing changes what sync writes: final seasons synced by an older version re-sync
-PREP_VERSION <- 4L
+PREP_VERSION <- 5L
 FLOOR_MIN_GAMES <- 2       # non-neutral home games at a venue that make it a team's floor
 
 # ---- Games ------------------------------------------------------------------------
@@ -67,6 +67,7 @@ build_games <- function(season, division = c("all", "d1", "nond1")) {
     dplyr::inner_join(cb, by = "game_id") |>
     dplyr::left_join(cbbd_lines(season), by = "cbbd_id") |>
     dplyr::left_join(poss, by = "game_id") |>
+    orient_cbbd(cbbd_team_ids(season, sched)) |>
     dplyr::filter(!(is.na(home_conf) & is.na(away_conf)))
   g <- cbind(g, venue_site(g, floors)) |>
     dplyr::mutate(
@@ -84,6 +85,38 @@ build_games <- function(season, division = c("all", "d1", "nond1")) {
     )
   if (division != "all") g <- g[g$division == division, ]
   g
+}
+
+# CBBD's fields come in CBBD's home/away order, which is not always ESPN's (2027: 70 games, mostly
+# neutral sites), and now and then a side is another team (Penn State for Penn State Lehigh
+# Valley) or the record another game. The record is flipped when either of its teams (ids:
+# cbbd_team_ids()) is on ESPN's other side; conference and seed follow, and a side whose CBBD
+# team is a different ESPN team gets no conference. The spread is oriented by the line's home
+# team within the CBBD game, then the game. Period points follow ESPN's final score when CBBD's
+# totals match it either way round, the teams otherwise. A record with another team on a side
+# keeps no line, nor period points unless the scores confirm them.
+orient_cbbd <- function(g, ids) {
+  espn <- function(cb) ids$team_id[match(cb, ids$cbbd_team_id)]
+  is <- function(a, b) !is.na(a) & a == b
+  eh <- espn(g$cb_home_id); ea <- espn(g$cb_away_id)
+  flip <- is(eh, g$away_id) | is(ea, g$home_id)
+  th <- ifelse(flip, ea, eh); ta <- ifelse(flip, eh, ea)           # ESPN id of the CBBD team on each ESPN side
+  other <- (!is.na(th) & th != g$home_id) | (!is.na(ta) & ta != g$away_id)
+  sw <- function(h, a) list(ifelse(flip, a, h), ifelse(flip, h, a))
+  cf <- sw(g$home_conf, g$away_conf); sd <- sw(g$home_seed, g$away_seed)
+  g$home_conf <- ifelse(!is.na(th) & th != g$home_id, NA_character_, cf[[1]])
+  g$away_conf <- ifelse(!is.na(ta) & ta != g$away_id, NA_character_, cf[[2]])
+  g$home_seed <- sd[[1]]; g$away_seed <- sd[[2]]
+  g$spread <- ifelse(xor(flip, is(g$line_home_id, g$cb_away_id)), -g$spread, g$spread)
+  g$spread[other] <- NA_real_; g$total_line[other] <- NA_real_
+  pts <- !is.na(g$cb_home_pts) & !is.na(g$cb_away_pts) & !is.na(g$home_score) & !is.na(g$away_score)
+  same <- pts & g$cb_home_pts == g$home_score & g$cb_away_pts == g$away_score
+  rev <- pts & !same & g$cb_home_pts == g$away_score & g$cb_away_pts == g$home_score
+  rf <- rev | (!same & !rev & flip)
+  hr <- ifelse(rf, g$away_reg, g$home_reg); ar <- ifelse(rf, g$home_reg, g$away_reg)
+  hr[other & !same & !rev] <- NA_real_; ar[other & !same & !rev] <- NA_real_
+  g$home_reg <- hr; g$away_reg <- ar
+  g[, setdiff(names(g), c("cb_home_id", "cb_away_id", "cb_home_pts", "cb_away_pts", "line_home_id"))]
 }
 
 read_bans <- function(path = "data/postseason_bans.csv") {
@@ -470,7 +503,7 @@ ft_rates_to_date <- function(fts, history = NULL) {
 
 # A season's games with both signals. ft_history: earlier seasons' free throws (shooter FT%).
 season_games <- function(data, shot_model, ft_history = NULL) {
-  g <- data$games
+  g <- conf_from_d1(data$games, data$d1_teams)
   if (is.null(data$shots) || !nrow(data$shots)) {
     g$poss_live <- NA_real_; g$has_eff <- FALSE; g$eff100 <- 0; g$lux100 <- 0
     return(add_absences(g, data$player_box))
@@ -478,6 +511,18 @@ season_games <- function(data, shot_model, ft_history = NULL) {
   shots <- prep_shots(data$shots, shot_model$med, shot_model$families)
   fts <- ft_rates_to_date(data$free_throws, ft_history)
   add_absences(add_eff(g, game_xpts(shots, fts, data$game_live, shot_model$model)), data$player_box)
+}
+
+# Each side's conference from ESPN's D1 list (d1_teams: CBBD's names), NA for a team not on it,
+# so a game's conferences and division do not hang on one CBBD record (CBBD's per-game sides are
+# now and then another team or game: Penn State for Penn State Lehigh Valley, Alabama A&M for
+# Alabama State; LIU's 2014-19 games have no conference). Without the list, CBBD's stand.
+conf_from_d1 <- function(g, d1) {
+  if (is.null(d1) || !nrow(d1)) return(g)
+  g$home_conf <- d1$conf[match(g$home_id, d1$team_id)]
+  g$away_conf <- d1$conf[match(g$away_id, d1$team_id)]
+  g$division <- ifelse(!is.na(g$home_conf) & !is.na(g$away_conf), "d1", "nond1")
+  g
 }
 
 # home_missing / away_missing: share of each team's usual minutes missing (absence_table())

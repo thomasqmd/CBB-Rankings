@@ -202,6 +202,8 @@ cbbd_games <- function(season) {
     cbbd_id = int(\(x) x$id), game_id = int(\(x) x$sourceId), cbbd_status = chr(\(x) x$status),
     season_type = chr(\(x) x$seasonType), tournament = chr(\(x) x$tournament), game_type = chr(\(x) x$gameType),
     home_conf = chr(\(x) x$homeConference), away_conf = chr(\(x) x$awayConference),
+    cb_home_id = int(\(x) x$homeTeamId), cb_away_id = int(\(x) x$awayTeamId),
+    cb_home_pts = int(\(x) x$homePoints), cb_away_pts = int(\(x) x$awayPoints),
     cbbd_neutral = vapply(g, \(x) isTRUE(x$neutralSite), logical(1)),
     home_seed = int(\(x) x$homeSeed), away_seed = int(\(x) x$awaySeed),
     n_periods = vapply(g, \(x) length(x$homePeriodPoints), integer(1)),
@@ -213,10 +215,11 @@ cbbd_games <- function(season) {
 # Closing spread (home perspective, negative = home favoured), median over providers
 cbbd_lines <- function(season) {
   l <- read_cbbd(season, "lines")
-  if (!length(l)) return(data.frame(cbbd_id = integer(), spread = numeric(), total_line = numeric()))
+  if (!length(l)) return(data.frame(cbbd_id = integer(), line_home_id = integer(), spread = numeric(), total_line = numeric()))
   med <- function(v) { v <- unlist(v); if (length(v)) stats::median(v) else NA_real_ }
   data.frame(
     cbbd_id = vapply(l, \(x) x$gameId, integer(1)),
+    line_home_id = vapply(l, \(x) as.integer(x$homeTeamId %||% NA_integer_), integer(1)),
     spread = vapply(l, \(x) med(lapply(x$lines, `[[`, "spread")), numeric(1)),
     total_line = vapply(l, \(x) med(lapply(x$lines, `[[`, "overUnder")), numeric(1))
   )
@@ -293,7 +296,7 @@ read_espn_rankings <- function(files, season) {
 }
 
 # CBBD team ids -> ESPN team ids, from the games both sources share (home with home, away with
-# away; the rare swapped neutral-site game is outvoted)
+# away; swapped games are outvoted)
 cbbd_team_ids <- function(season, games) {
   g <- read_cbbd(season, "games")
   if (!length(g)) return(data.frame(cbbd_team_id = integer(), team_id = integer()))
@@ -303,8 +306,12 @@ cbbd_team_ids <- function(season, games) {
   pairs <- rbind(data.frame(cbbd_team_id = m$cb_home, team_id = m$home_id),
                  data.frame(cbbd_team_id = m$cb_away, team_id = m$away_id))
   n <- dplyr::count(stats::na.omit(pairs), cbbd_team_id, team_id)
-  n <- n[order(n$cbbd_team_id, -n$n), ]
-  n[!duplicated(n$cbbd_team_id), c("cbbd_team_id", "team_id")]
+  # one to one, the most votes first: a non-D1 team whose only game is swapped would otherwise
+  # take its D1 opponent's id
+  n <- n[order(-n$n, n$cbbd_team_id), ]
+  n <- n[!duplicated(n$cbbd_team_id), ]
+  n <- n[!duplicated(n$team_id), ]
+  n[order(n$cbbd_team_id), c("cbbd_team_id", "team_id")]
 }
 
 # One row per (poll, release, team). rank is NA for teams only receiving votes. CBBD has no
@@ -347,6 +354,8 @@ cbbd_champions <- function(season, games) {
   x <- data.frame(game_id = vapply(g, \(x) as.integer(x$sourceId %||% NA_integer_), integer(1)),
                   notes = chr(\(x) x$gameNotes), type = chr(\(x) x$gameType), st = chr(\(x) x$seasonType),
                   hc = chr(\(x) x$homeConference), ac = chr(\(x) x$awayConference),
+                  ch = vapply(g, \(x) as.integer(x$homeTeamId %||% NA_integer_), integer(1)),
+                  ca = vapply(g, \(x) as.integer(x$awayTeamId %||% NA_integer_), integer(1)),
                   conf_game = vapply(g, \(x) isTRUE(x$conferenceGame), logical(1)),
                   home_won = vapply(g, \(x) isTRUE(x$homeWinner), logical(1)),
                   played = vapply(g, \(x) !is.null(x$homeWinner) && !is.null(x$homePoints), logical(1)),
@@ -356,8 +365,12 @@ cbbd_champions <- function(season, games) {
   x <- x[x$type %in% "TRNMNT" & x$st %in% "regular" & (x$conf_game | x$hc %in% x$ac) & final %in% TRUE & x$played, ]
   if (!nrow(x)) return(empty)
   m <- merge(x, games[, c("game_id", "home_id", "away_id")], by = "game_id")
+  # the winner by team, not by side (CBBD's home team is not always ESPN's)
+  ids <- cbbd_team_ids(season, games)
+  won <- ids$team_id[match(ifelse(m$home_won, m$ch, m$ca), ids$cbbd_team_id)]
+  won[!is.na(won) & won != m$home_id & won != m$away_id] <- NA
   out <- data.frame(conf = dplyr::coalesce(m$hc, m$ac), game_date = m$game_date,
-                    team_id = ifelse(m$home_won, m$home_id, m$away_id), notes = m$notes)
+                    team_id = dplyr::coalesce(won, ifelse(m$home_won, m$home_id, m$away_id)), notes = m$notes)
   out <- out[order(out$conf, out$game_date, decreasing = TRUE), ]
   out[!duplicated(out$conf), ]
 }
