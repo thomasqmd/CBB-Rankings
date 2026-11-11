@@ -7,8 +7,8 @@
 #     CBBD id, conferences, period scores, seeds, tournament) and closing lines. Responses are
 #     capped at 3,000 rows, so a season is fetched in date windows (4 calls per endpoint). In a
 #     live season each window is fetched once (the schedule); after that one call per endpoint, at
-#     most once per MIN_REFRESH_HOURS, fetches the last LIVE_LOOKBACK days into a dated file that
-#     takes precedence over the windows (2 calls a day).
+#     most once per MIN_REFRESH_HOURS, fetches the last LIVE_LOOKBACK days through LIVE_AHEAD days
+#     ahead into a dated file that takes precedence over the windows (2 calls a day).
 #   Torvik (barttorvik.com, no key): preseason ratings (time machine, the day before opening
 #     night) for the carry-over prior; season-end team results as a benchmark.
 #   ESPN APIs (no key): D1 conference membership by season (core API), box scores of the few
@@ -30,8 +30,11 @@ ROSTERS_FROM <- 2025L
 ESPN_CORE <- "https://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball"
 ESPN_SITE <- "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 CBBD_URL <- "https://api.collegebasketballdata.com"
-MIN_REFRESH_HOURS <- 8   # an evening build by hand still leaves the 07:00 run a fresh fetch
+MIN_REFRESH_HOURS <- 6   # a build by hand before 01:00 still leaves the 07:00 run a fresh fetch
 LIVE_LOOKBACK <- 10
+# CBBD reads an end date as midnight UTC (6 pm Central the day before), so today + 1 missed that
+# night's games; today + 3 takes tonight's and tomorrow night's lines
+LIVE_AHEAD <- 3
 
 # Season s = the season ending in spring of year s (2026 = 2025-26)
 current_cbb_season <- function(today = Sys.Date()) {
@@ -86,7 +89,7 @@ cbbd_windows <- function(season) {
 
 # One JSON file per (endpoint, season, window), fetched once. Live season: once the season has
 # started, one call per endpoint (when the newest recent file is older than MIN_REFRESH_HOURS)
-# fetches the last LIVE_LOOKBACK days into <ep>_<s>_rYYYYMMDD.json; read_cbbd() takes each game
+# fetches the last LIVE_LOOKBACK days to LIVE_AHEAD days ahead into <ep>_<s>_rYYYYMMDD.json; read_cbbd() takes each game
 # from the newest file that has it.
 fetch_cbbd <- function(season, endpoint = c("games", "lines"), today = Sys.Date()) {
   dir.create(raw_path("cbbd"), recursive = TRUE, showWarnings = FALSE)
@@ -108,7 +111,7 @@ fetch_cbbd <- function(season, endpoint = c("games", "lines"), today = Sys.Date(
     rec <- sort(Sys.glob(raw_path("cbbd", sprintf("%s_%d_r*.json", ep, season))))
     if (live && today > w$start[1] && (!length(rec) || stale(utils::tail(rec, 1)))) {
       dest <- raw_path("cbbd", sprintf("%s_%d_r%s.json", ep, season, format(today, "%Y%m%d")))
-      writeLines(get(ep, today - LIVE_LOOKBACK, today + 1), dest)
+      writeLines(get(ep, today - LIVE_LOOKBACK, today + LIVE_AHEAD), dest)
       rec <- c(rec, dest)
     }
     c(rec, win)
