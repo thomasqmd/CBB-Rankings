@@ -96,6 +96,9 @@ sync_all <- function(seasons, db_path = "data/cbb.duckdb", today = Sys.Date()) {
   if (DBI::dbExistsTable(con, "shots")) fp <- merge(fp, q("SELECT season, COUNT(*) AS shots FROM shots WHERE season IN (%s) GROUP BY season"), all.x = TRUE)
   if (DBI::dbExistsTable(con, "d1_teams")) fp <- merge(fp, q("SELECT season, COUNT(*) AS d1_teams, SUM(CASE WHEN eligible THEN 0 ELSE 1 END) AS ineligible FROM d1_teams WHERE season IN (%s) GROUP BY season"), all.x = TRUE)
   if (DBI::dbExistsTable(con, "torvik_pre")) fp <- merge(fp, q("SELECT season, COUNT(*) AS torvik_pre FROM torvik_pre WHERE season IN (%s) GROUP BY season"), all.x = TRUE)
+  # when each season was last written: a re-sync (a new PREP_VERSION) can change values without
+  # changing a count, and data_<s> must reread it (an unchanged read still skips everything after)
+  fp <- merge(fp, q("SELECT season, synced_at, prep_version FROM sync_meta WHERE season IN (%s)"), all.x = TRUE)
   fp
 }
 
