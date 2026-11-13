@@ -25,7 +25,7 @@ FT_SHRINK <- 40                                                                 
 SHOT_MODEL_SEASONS <- 2                                                           # earlier seasons per shot model
 MIN_FAMILY_SHOTS <- 500                                                           # rarer families fold into "jumper"
 # Bump when parsing changes what sync writes: final seasons synced by an older version re-sync
-PREP_VERSION <- 5L
+PREP_VERSION <- 8L         # 6: closing lines sided by ESPN and the odds archive (resolve_lines()); 7: ESPN's zero placeholders; 8: ESPN totals of 0 / -1 are no total
 FLOOR_MIN_GAMES <- 2       # non-neutral home games at a venue that make it a team's floor
 
 # ---- Games ------------------------------------------------------------------------
@@ -83,8 +83,215 @@ build_games <- function(season, division = c("all", "d1", "nond1")) {
       # usable as a model observation: completed, with possessions and period scores
       played = completed & !is.na(poss) & !is.na(home_reg) & !is.na(away_reg)
     )
+  g <- resolve_lines(g, game_odds(g, season), sbr_games(g, read_sbr_season(season)))
   if (division != "all") g <- g[g$division == division, ]
   g
+}
+
+# ---- Closing lines ---------------------------------------------------------------------
+#
+# CBBD's spread can be on the wrong side on a neutral court (cbbd_lines()), and a few hundred
+# D1 games a season have no CBBD line. The side comes from the first source that settles it:
+#   1. the odds archive (read_sbr()), which names the favourite by team (2013-14 to 2020-21).
+#      Where it and an accepted ESPN book disagree on a neutral court (42 games, 2015-2021), the
+#      archive's favourite won by 3.8 points on average and ESPN's lost by as much
+#   2. ESPN's books (fetch_espn_odds()): every book on a non-neutral court, on a neutral court only
+#      the book-seasons in ESPN_BOOKS, whose own neutral-court lines fit the results
+#   3. CBBD, when the game is not on a neutral court and its providers agree on the favourite
+#   4. CBBD's own median when it is within LINE_PICKEM of a pick'em (a reversal moves it by at
+#      most 2 x LINE_PICKEM points)
+# and otherwise stays NA. The size is CBBD's (the median of its providers' absolute spreads),
+# else the deciding source's own. spread_source says where the side came from, line_filled that
+# CBBD had no line; total_line is CBBD's, else ESPN's median, else the archive's.
+LINE_PICKEM <- 1.5
+
+# ESPN book families (espn_book_family()) whose neutral-court lines a season can use. A family-season
+# is accepted when it has at least 100 neutral-court D1 games, the slope of the result on its line
+# is at least 0.90 and at most 4% of its favourites of 10+ points lose by 10+ (off neutral courts
+# 1.2-2.4% a season). Per family-season numbers in data/espn_books.csv; outcomes only accept or
+# reject a family-season, never one game's side. A reversing book shows plainly: in 2017-18 every
+# book but teamrankings had slopes 0.65-0.75 and 7-10% of big favourites losing big; 2019-20 has
+# none. A season after the last row (the live season) uses the last row's families until its own
+# can be judged.
+ESPN_BOOKS <- utils::read.table(header = TRUE, text = "
+season family
+2015 5dimes
+2015 betonline
+2015 bovada
+2015 fantasy911
+2015 numberfire
+2015 opening
+2015 sportsbetting
+2015 teamrankings
+2016 5dimes
+2016 betonline
+2016 bovada
+2016 numberfire
+2016 opening
+2016 pinnaclesports
+2016 sportsbetting
+2016 teamrankings
+2016 westgate
+2017 betus
+2017 numberfire
+2017 opening
+2017 teamrankings
+2018 teamrankings
+2019 consensus
+2021 accuscore
+2021 betfair
+2021 caesars
+2021 draftkings
+2021 mgm
+2021 numberfire
+2021 pointsbet
+2021 teamrankings
+2021 unibet
+2022 accuscore
+2022 caesars
+2022 draftkings
+2022 mgm
+2022 pointsbet
+2022 sugarhouse
+2022 titanbets
+2022 unibet
+2022 westgate
+2023 accuscore
+2023 caesars
+2023 draftkings
+2023 mgm
+2023 sugarhouse
+2023 titanbets
+2023 unibet
+2024 betfair
+2024 caesars
+2024 espnbet
+2024 mgm
+2024 pointsbet
+2025 espnbet
+2026 draftkings
+2026 espnbet
+")
+
+# A game is on a neutral court for the line when any flag says so (ESPN's, CBBD's, or `site`)
+line_neutral <- function(g) g$site %in% 0L | g$neutral_site %in% TRUE | g$cbbd_neutral %in% TRUE
+
+# ESPN odds for the season's D1 games whose side CBBD can't settle on its own: neutral courts,
+# split providers, no CBBD line. Played games are fetched once; in a live season neutral and split
+# games up to LIVE_AHEAD days ahead are fetched too and refreshed when stale (the dashboard shows
+# their lines). An ESPN outage leaves those games unresolved for the day.
+game_odds <- function(g, season, today = Sys.Date()) {
+  need <- g$division %in% "d1" & (line_neutral(g) | g$line_split %in% TRUE | is.na(g$spread))
+  done <- need & g$completed %in% TRUE
+  ahead <- need & !g$completed %in% TRUE & !season_final(season, today) & (line_neutral(g) | g$line_split %in% TRUE) &
+    g$game_date >= today & g$game_date <= today + LIVE_AHEAD
+  ids <- g$game_id[done | ahead]
+  fetch_espn_odds(ids, refresh = g$game_id[ahead])
+  read_espn_odds(ids)
+}
+
+# A book's name without its state edition or web suffix ("Caesars Sportsbook (New Jersey)",
+# "Caesar's" -> "caesars"; "BOVADA.lv" -> "bovada")
+espn_book_family <- function(book) {
+  b <- gsub("[^a-z0-9]", "", tolower(sub("\\s*\\(.*\\)\\s*$", "", book)))
+  b2 <- sub("sportsbook$", "", sub("(lv|ag|eu|com)$", "", b))
+  ifelse(nzchar(b2), b2, b)
+}
+
+# One row per game from ESPN's books: side (+1 home favoured, -1 away, 0 pick'em, NA unsettled),
+# espn_abs (the usable books' median absolute spread) and total (median over every book). Usable:
+# every book on a non-neutral court, the ESPN_BOOKS (season, book family) on a neutral one. The side
+# is the favourite more than half the usable books name (a stray book, often ESPN's own consensus
+# feed, is outvoted); an even split is unsettled unless the books' median size is within LINE_PICKEM
+# of a pick'em, where it is the median's side.
+espn_sides <- function(odds, g, books = ESPN_BOOKS) {
+  empty <- data.frame(game_id = integer(), espn_side = numeric(), espn_abs = numeric(), espn_total = numeric())
+  if (!nrow(odds)) return(empty)
+  odds$total[!is.na(odds$total) & odds$total <= 0] <- NA_real_   # 0 and -1 are a book's "no total"
+  k <- match(odds$game_id, g$game_id)
+  neutral <- line_neutral(g)[k]
+  season <- pmin(g$season[k], max(books$season))               # the live season: the last judged one's books
+  ok <- !neutral | paste(season, espn_book_family(odds$book)) %in% paste(books$season, books$family)
+  # a spread of 0 with no favourite and no total is ESPN's placeholder for a game no book priced
+  # (2014-15 to 2017-18: most games CBBD has no line for), not a pick'em
+  blank <- odds$spread %in% 0 & !odds$home_fav & !odds$away_fav & is.na(odds$total)
+  u <- odds[ok & !is.na(odds$spread) & !blank, ]
+  u$side <- ifelse(u$home_fav & !u$away_fav, 1, ifelse(u$away_fav & !u$home_fav, -1, -sign(u$spread)))
+  out <- do.call(rbind, lapply(split(u, u$game_id), function(d) {
+    m <- stats::median(d$spread); a <- stats::median(abs(d$spread))
+    v <- d$side[d$side != 0]
+    s <- if (!length(v)) 0 else if (mean(v > 0) > 0.5) 1 else if (mean(v < 0) > 0.5) -1 else if (a <= LINE_PICKEM) -sign(m) else NA_real_
+    data.frame(game_id = d$game_id[1], espn_side = s, espn_abs = a)
+  }))
+  ot <- odds[!is.na(odds$total), ]
+  tot <- if (nrow(ot)) stats::aggregate(total ~ game_id, ot, stats::median) else data.frame(game_id = integer(), total = numeric())
+  if (is.null(out)) out <- empty[, 1:3]
+  out <- merge(out, data.frame(game_id = tot$game_id, espn_total = tot$total), by = "game_id", all = TRUE)
+  out$espn_side[is.na(out$espn_abs)] <- NA_real_
+  out
+}
+
+# The archive's season, read once per build (NULL outside its seasons)
+read_sbr_season <- function(season) {
+  if (!season %in% SBR_SEASONS) return(NULL)
+  fetch_sbr(season)
+  read_sbr(season)
+}
+
+# Same team in two spellings ("WesternKentucky" / "Western Kentucky", "UMKC" / "Kansas City" fail
+# and need the other side to agree): letters only, the same first five, one inside the other, or
+# at most three edits apart
+same_team <- function(a, b) {
+  a <- gsub("[^a-z]", "", tolower(a)); b <- gsub("[^a-z]", "", tolower(b))
+  n <- pmin(nchar(a), nchar(b), 5)
+  ok <- !is.na(a) & !is.na(b) & nchar(a) > 0 & nchar(b) > 0
+  ok & (substr(a, 1, n) == substr(b, 1, n) | mapply(\(p, q) grepl(p, q, fixed = TRUE) || grepl(q, p, fixed = TRUE), a, b) |
+          mapply(\(p, q) utils::adist(p, q) <= 3, a, b))
+}
+
+# Archive games matched to ours: the same two final scores on the same date (or a day either side,
+# for late tip-offs) and at least one team's name agreeing; each archive game matches one of ours.
+# The home team is the one with the home score. sbr_side: +1 home favoured, -1 away, 0 pick'em.
+sbr_games <- function(g, sbr) {
+  empty <- data.frame(game_id = integer(), sbr_side = numeric(), sbr_spread = numeric(), sbr_total = numeric())
+  if (is.null(sbr) || !nrow(sbr)) return(empty)
+  x <- g[!is.na(g$home_score) & !is.na(g$away_score) & g$home_score != g$away_score, c("game_id", "game_date", "home", "away", "home_score", "away_score")]
+  x$lo <- pmin(x$home_score, x$away_score); x$hi <- pmax(x$home_score, x$away_score)
+  sbr$rid <- seq_len(nrow(sbr)); sbr$lo <- pmin(sbr$pts_a, sbr$pts_b); sbr$hi <- pmax(sbr$pts_a, sbr$pts_b)
+  m <- do.call(rbind, lapply(c(0, -1, 1), function(dd) {
+    s <- sbr; s$game_date <- s$date - dd; s$dd <- abs(dd)
+    merge(x, s, by = c("game_date", "lo", "hi"))
+  }))
+  if (is.null(m) || !nrow(m)) return(empty)
+  a_home <- m$home_score == m$pts_a
+  m$names <- same_team(ifelse(a_home, m$team_a, m$team_b), m$home) + same_team(ifelse(a_home, m$team_b, m$team_a), m$away)
+  m <- m[m$names > 0, ]
+  m <- m[order(m$game_id, -m$names, m$dd), ]; m <- m[!duplicated(m$game_id), ]
+  m <- m[order(-m$names, m$dd), ]; m <- m[!duplicated(m$rid), ]
+  a_home <- m$home_score == m$pts_a
+  data.frame(game_id = m$game_id, sbr_side = ifelse(a_home, m$fav_a, -m$fav_a), sbr_spread = m$spread, sbr_total = m$total)
+}
+
+# The games table's spread, total_line, spread_source and line_filled from CBBD's line (spread,
+# spread_abs, line_split, total_line), ESPN (game_odds()) and the archive (sbr_games()); the CBBD-only
+# columns are dropped
+resolve_lines <- function(g, odds, sbr, books = ESPN_BOOKS) {
+  e <- espn_sides(odds, g, books); e <- e[match(g$game_id, e$game_id), ]
+  s <- sbr[match(g$game_id, sbr$game_id), ]
+  has_cb <- !is.na(g$spread)
+  cb_side <- ifelse(has_cb & !line_neutral(g) & g$line_split %in% FALSE, -sign(g$spread), NA)
+  src <- ifelse(!is.na(s$sbr_side), "archive", ifelse(!is.na(e$espn_side), "espn", ifelse(!is.na(cb_side), "cbbd", NA)))
+  side <- dplyr::coalesce(s$sbr_side, e$espn_side, cb_side)
+  own <- ifelse(src %in% "espn", e$espn_abs, ifelse(src %in% "archive", s$sbr_spread, NA))
+  mag <- dplyr::coalesce(g$spread_abs, own)
+  spread <- ifelse(is.na(side), NA_real_, ifelse(side == 0, 0, -side * mag))
+  pk <- is.na(side) & has_cb & dplyr::coalesce(g$spread_abs, abs(g$spread)) <= LINE_PICKEM
+  spread[pk] <- g$spread[pk]; src[pk] <- "cbbd"
+  g$spread <- spread + 0                                        # no negative zero
+  g$spread_source <- src
+  g$line_filled <- !has_cb & !is.na(spread)
+  g$total_line <- dplyr::coalesce(g$total_line, e$espn_total, s$sbr_total)
+  g[, setdiff(names(g), c("spread_abs", "line_split"))]
 }
 
 # CBBD's fields come in CBBD's home/away order, which is not always ESPN's (2027: 70 games, mostly
@@ -109,7 +316,8 @@ orient_cbbd <- function(g, ids) {
   g$home_seed <- sd[[1]]; g$away_seed <- sd[[2]]
   g$spread <- ifelse(xor(flip, is(g$line_home_id, g$cb_away_id)), -g$spread, g$spread)
   g$spread[other] <- NA_real_; g$total_line[other] <- NA_real_
-  pts <- !is.na(g$cb_home_pts) & !is.na(g$cb_away_pts) & !is.na(g$home_score) & !is.na(g$away_score)
+  if (!is.null(g$spread_abs)) { g$spread_abs[other] <- NA_real_; g$line_split[other] <- NA }
+  pts <-!is.na(g$cb_home_pts) & !is.na(g$cb_away_pts) & !is.na(g$home_score) & !is.na(g$away_score)
   same <- pts & g$cb_home_pts == g$home_score & g$cb_away_pts == g$away_score
   rev <- pts & !same & g$cb_home_pts == g$away_score & g$cb_away_pts == g$home_score
   rf <- rev | (!same & !rev & flip)

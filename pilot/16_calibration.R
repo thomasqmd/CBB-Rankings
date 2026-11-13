@@ -51,6 +51,7 @@ print(as.data.frame(out$coverage), digits = 3)
 gl <- g[!is.na(g$line), ]
 bl <- bind_rows(lapply(SEASONS[-1], function(s) bind_rows(lapply(c("Nov-Dec", "Jan-Apr"), function(pd) {
   past <- gl[gl$season < s & gl$period == pd, ]; now <- gl[gl$season == s & gl$period == pd, ]
+  if (!nrow(now)) return(NULL)                                    # the live season before January
   w <- coef(lm(actual ~ 0 + pred_margin + line, past))
   now$blend <- w[1] * now$pred_margin + w[2] * now$line; now$w_model <- w[1]; now
 }))))

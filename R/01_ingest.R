@@ -215,17 +215,76 @@ cbbd_games <- function(season) {
   )
 }
 
-# Closing spread (home perspective, negative = home favoured), median over providers
-cbbd_lines <- function(season) {
-  l <- read_cbbd(season, "lines")
-  if (!length(l)) return(data.frame(cbbd_id = integer(), line_home_id = integer(), spread = numeric(), total_line = numeric()))
+# CBBD's closing line: spread (home perspective, negative = home favoured, median over providers),
+# its size (median of the providers' absolute spreads) and whether the providers' spreads and
+# moneylines name different favourites (line_split). On neutral courts a provider now and then
+# quotes the game from the other side and CBBD keeps its numbers under CBBD's home team, reversing
+# that provider's spread, its moneyline or both (Texas -26.5 vs Northern Arizona, 2022-11-21, came
+# through as Northern Arizona -26.5); the lines record's teams are always the games record's, so
+# nothing in it says which side a provider meant. The side is settled in resolve_lines().
+cbbd_lines <- function(season, l = read_cbbd(season, "lines")) {
+  if (!length(l)) return(data.frame(cbbd_id = integer(), line_home_id = integer(), spread = numeric(), spread_abs = numeric(),
+                                    line_split = logical(), total_line = numeric()))
   med <- function(v) { v <- unlist(v); if (length(v)) stats::median(v) else NA_real_ }
+  num <- function(lines, f) vapply(lines, \(p) as.numeric(p[[f]] %||% NA), numeric(1))
+  # +1 home favoured, -1 away, per provider spread and moneyline (pick'ems and blanks left out)
+  sides <- function(lines) {
+    v <- c(-sign(num(lines, "spread")), sign(num(lines, "awayMoneyline") - num(lines, "homeMoneyline")))
+    v[!is.na(v) & v != 0]
+  }
   data.frame(
     cbbd_id = vapply(l, \(x) x$gameId, integer(1)),
     line_home_id = vapply(l, \(x) as.integer(x$homeTeamId %||% NA_integer_), integer(1)),
     spread = vapply(l, \(x) med(lapply(x$lines, `[[`, "spread")), numeric(1)),
+    spread_abs = vapply(l, \(x) med(abs(num(x$lines, "spread"))[!is.na(num(x$lines, "spread"))]), numeric(1)),
+    line_split = vapply(l, \(x) { v <- sides(x$lines); any(v > 0) && any(v < 0) }, logical(1)),
     total_line = vapply(l, \(x) med(lapply(x$lines, `[[`, "overUnder")), numeric(1))
   )
+}
+
+# ---- Odds archive (sportsbookreviewsonline.com) ---------------------------------------
+
+# One spreadsheet per season, 2007-08 to 2020-21 (data/raw/sbr/), fetched once: the files are
+# static. Rows come in pairs, one per team, with the final score; the favourite's row carries the
+# spread in Close (sometimes written negative), the other row the total; "pk" is a pick'em.
+SBR_SEASONS <- 2008:2021
+SBR_URL <- "https://www.sportsbookreviewsonline.com/wp-content/uploads/sportsbookreviewsonline_com_737"
+sbr_path <- function(season) raw_path("sbr", sprintf("ncaa-basketball-%d-%02d.xlsx", season - 1, season %% 100))
+fetch_sbr <- function(season) {
+  dest <- sbr_path(season)
+  if (!season %in% SBR_SEASONS || file.exists(dest)) return(if (file.exists(dest)) dest else NA_character_)
+  dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+  ok <- tryCatch({ utils::download.file(sprintf("%s/%s", SBR_URL, basename(dest)), dest, mode = "wb", quiet = TRUE); TRUE }, error = \(e) FALSE)
+  if (!ok) { unlink(dest); return(NA_character_) }
+  dest
+}
+
+# The season's games in the archive: date, both teams with their final scores, fav_a = +1 when
+# team a is favoured (-1 team b, 0 pick'em), spread (the favourite's points) and total
+read_sbr <- function(season) {
+  f <- sbr_path(season)
+  parse_sbr(if (file.exists(f)) readxl::read_excel(f, col_types = "text") else NULL, season)
+}
+
+# x: the spreadsheet as text columns (Date MMDD, Rot, Team, Final, Close)
+parse_sbr <- function(x, season) {
+  empty <- data.frame(date = as.Date(character()), team_a = character(), team_b = character(), pts_a = integer(),
+                      pts_b = integer(), fav_a = numeric(), spread = numeric(), total = numeric())
+  if (is.null(x)) return(empty)
+  x <- x[!is.na(x$Rot) & !is.na(x$Final), ]
+  if (nrow(x) < 2) return(empty)
+  a <- x[seq(1, nrow(x) - 1, 2), ]; b <- x[seq(2, nrow(x), 2), ]
+  ok <- as.integer(b$Rot) == as.integer(a$Rot) + 1                  # a misread pair is left out
+  num <- function(v) { v <- tolower(trimws(v)); ifelse(v %in% c("pk", "p"), 0, suppressWarnings(as.numeric(v))) }
+  ca <- num(a$Close); cb <- num(b$Close)
+  sp <- function(v) !is.na(v) & abs(v) < 70                        # a spread, not a total
+  fav <- ifelse(sp(ca) & !sp(cb), sign(abs(ca)), ifelse(sp(cb) & !sp(ca), -sign(abs(cb)), NA))
+  md <- as.integer(a$Date); mon <- md %/% 100
+  out <- data.frame(date = as.Date(sprintf("%d-%02d-%02d", ifelse(mon >= 8, season - 1, season), mon, md %% 100)),
+                    team_a = a$Team, team_b = b$Team, pts_a = as.integer(a$Final), pts_b = as.integer(b$Final),
+                    fav_a = fav, spread = ifelse(sp(ca) & !sp(cb), abs(ca), ifelse(sp(cb) & !sp(ca), abs(cb), NA)),
+                    total = ifelse(sp(ca) & !sp(cb), cb, ifelse(sp(cb) & !sp(ca), ca, NA)))
+  out[ok & !is.na(out$date) & !is.na(out$pts_a) & !is.na(out$pts_b), ]
 }
 
 # ---- Team names ---------------------------------------------------------------------
@@ -473,6 +532,45 @@ read_espn_summaries <- function(files) {
                completed = isTRUE(comp$status$type$completed), poss = if (length(poss) == 2) mean(poss) else NA_real_)
   })
   do.call(rbind, rows)
+}
+
+# ESPN core odds of a game, every book's line (data/raw/espn/odds/<game_id>.json), at most
+# ESPN_ODDS_RATE requests a second. A game is fetched once and never again, except the ids in
+# `refresh` (games not yet played), refetched when stale. A failed request (outage, timeout)
+# writes nothing, so that game stays unresolved until a later run fetches it; a 404 (no odds)
+# is kept like any other answer.
+ESPN_ODDS_RATE <- 3
+fetch_espn_odds <- function(game_ids, refresh = integer()) {
+  dir.create(raw_path("espn", "odds"), recursive = TRUE, showWarnings = FALSE)
+  dest <- raw_path("espn", "odds", sprintf("%d.json", game_ids))
+  need <- !file.exists(dest) | (game_ids %in% refresh & vapply(dest, stale, logical(1)))
+  for (i in which(need)) {
+    url <- sprintf("%s/events/%d/competitions/%d/odds?limit=100", ESPN_CORE, game_ids[i], game_ids[i])
+    resp <- tryCatch(httr2::request(url) |> httr2::req_timeout(20) |> httr2::req_throttle(rate = ESPN_ODDS_RATE, fill_time_s = 1) |>
+                       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE, backoff = \(k) 2^k) |>
+                       httr2::req_error(is_error = \(r) FALSE) |> httr2::req_perform(), error = \(e) NULL)
+    if (!is.null(resp) && httr2::resp_status(resp) %in% c(200L, 404L)) writeLines(httr2::resp_body_string(resp), dest[i])
+  }
+  ifelse(file.exists(dest), dest, NA_character_)
+}
+
+# Cached ESPN odds -> one row per (game, book): spread from the home side (negative = home
+# favoured), the books' favourite flags and the total. In-game ("Live Odds") lines are left out.
+read_espn_odds <- function(game_ids) {
+  empty <- data.frame(game_id = integer(), book = character(), spread = numeric(), home_fav = logical(),
+                      away_fav = logical(), total = numeric())
+  f <- raw_path("espn", "odds", sprintf("%d.json", game_ids))
+  rows <- lapply(which(file.exists(f)), function(i) {
+    it <- tryCatch(jsonlite::fromJSON(f[i], simplifyVector = FALSE)$items, error = \(e) NULL)
+    if (!length(it)) return(NULL)
+    num <- \(v) as.numeric(v %||% NA)
+    data.frame(game_id = as.integer(game_ids[i]), book = vapply(it, \(p) p$provider$name %||% NA_character_, ""),
+               spread = vapply(it, \(p) num(p$spread), 0), home_fav = vapply(it, \(p) isTRUE(p$homeTeamOdds$favorite), NA),
+               away_fav = vapply(it, \(p) isTRUE(p$awayTeamOdds$favorite), NA), total = vapply(it, \(p) num(p$overUnder), 0))
+  })
+  out <- do.call(rbind, rows)
+  if (is.null(out)) return(empty)
+  out[!is.na(out$book) & !grepl("live odds", out$book, ignore.case = TRUE), ]
 }
 
 # ---- Injuries ----------------------------------------------------------------------

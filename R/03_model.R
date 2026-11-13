@@ -58,6 +58,8 @@ season_hca_prior <- function(games, cfg) {
 # without `site` (the pilot's) use ESPN's neutral flag
 game_site <- function(g) if (is.null(g$site)) 1 - g$neutral else g$site
 
+LINE_COLS <- c("spread", "total_line", "spread_source", "line_filled")
+
 # A snapshot's Stan data. games: a season's games table (both divisions, completed and scheduled;
 # the pilot's D1-only tables work too, with non-D1 games in nd_games). Fits games played before
 # snap_date; `upcoming` = D1 games in [snap_date, next_date), predicted by the snapshot.
@@ -68,7 +70,8 @@ prepare_input <- function(games, snap_date, teams, prev = NULL, cfg = model_conf
     games <- games[games$division == "d1", ]
   }
   played <- function(x) if (is.null(x$played)) rep(TRUE, nrow(x)) else x$played
-  g <- games[played(games) & games$game_date < snap_date, ]
+  # The closing line is a benchmark, not data: left out so a corrected line refits nothing
+  g <- games[played(games) & games$game_date < snap_date, setdiff(names(games), LINE_COLS)]
   # Games after the snapshot carry schedule columns only, so a result coming in does not change a
   # past snapshot's input (and refit it)
   sched <- intersect(c("game_id", "game_date", "home_id", "away_id", "home", "away", "home_conf", "away_conf", "neutral", "site",

@@ -22,6 +22,38 @@ test_that("team names normalise and Torvik overrides win", {
   expect_equal(sort(m$team_id), c(41L, 127L, 152L))
 })
 
+test_that("CBBD lines: mixed-sign providers keep their size and are flagged as split", {
+  p <- function(spread, hml, aml, ou = 132.5) list(spread = spread, overUnder = ou, homeMoneyline = hml, awayMoneyline = aml)
+  rec <- function(id, ...) list(gameId = id, homeTeamId = 206L, awayTeamId = 295L, lines = list(...))
+  l <- list(
+    # Northern Arizona (home) vs Texas, neutral, 2022-11-21: ESPN BET had Texas -26 (the home
+    # side +26, moneyline +2000); consensus' spread and teamrankings' both fields came reversed
+    rec(13082L, p(26, 2000, -6000), p(-26.5, 2033, -9231), p(-26.5, -3525, 1573)),
+    rec(2L, p(-7, -300, 240), p(-7.5, -320, 250)),                    # agreeing providers
+    rec(3L, p(-1, -115, -105), p(1, -105, -115)),                     # a pick'em the books split on
+    rec(4L, p(NULL, NULL, NULL, NULL)),                               # no numbers
+    rec(5L, p(-12, 900, -1500))                                       # one provider at odds with itself
+  )
+  out <- cbbd_lines(2023, l)
+  expect_equal(out$cbbd_id, c(13082L, 2:5))
+  expect_equal(out$spread, c(-26.5, -7.25, 0, NA, -12))
+  expect_equal(out$spread_abs, c(26.5, 7.25, 1, NA, 12))
+  expect_equal(out$line_split, c(TRUE, FALSE, TRUE, FALSE, TRUE))
+  expect_equal(out$total_line, c(132.5, 132.5, 132.5, NA, 132.5))
+  expect_equal(nrow(cbbd_lines(2023, list())), 0)
+})
+
+test_that("the odds archive names the favourite by row, whatever the sign or a pick'em", {
+  x <- data.frame(Date = c("1123", "1123", "222", "222", "301", "301"), Rot = c("713", "714", "729", "730", "801", "802"),
+                  Team = c("WesternKentucky", "Purdue", "Florida", "Kentucky", "Iona", "Siena"),
+                  Final = c("77", "73", "59", "65", "70", "68"), Close = c("148", "19", "136.5", "-4.5", "pk", "140"))
+  out <- parse_sbr(x, 2018)
+  expect_equal(out$date, as.Date(c("2017-11-23", "2018-02-22", "2018-03-01")))
+  expect_equal(out$fav_a, c(-1, -1, 0))
+  expect_equal(out$spread, c(19, 4.5, 0))
+  expect_equal(out$total, c(148, 136.5, 140))
+})
+
 test_that("a season replaces its rows, and an empty table is fine", {
   con <- DBI::dbConnect(duckdb::duckdb())
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE))

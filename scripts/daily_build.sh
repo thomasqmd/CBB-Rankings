@@ -11,7 +11,7 @@ calls_before=$(wc -l < logs/cbbd_calls.log 2>/dev/null || echo 0)
 start=$(date +%s)
 {
   echo "== $(date '+%F %T') daily build"
-  Rscript -e 'targets::tar_make(reporter = "summary")'
+  Rscript -e 'targets::tar_make(reporter = "balanced")'
   status=$?
   echo "== tar_make exit $status"
   Rscript check_build.R

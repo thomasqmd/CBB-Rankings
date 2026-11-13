@@ -9,7 +9,8 @@ Two Division I men's basketball rankings, the CFB-Rankings method ported to bask
 
 Status (2026-10-30): **pilot done; the full 2015–2027 pipeline is built, rebuilt under the
 re-chosen defaults (2026-10-25) and backtested; Phases 1–6 are coded and tested.** Backtest
-2015–2026: MAE 8.80 (8.81 vs the closing line's 8.75 on games with a line), log loss 0.5230,
+2015–2026: MAE 8.80 (8.82 vs the closing line's 8.72 on games with a line, on the lines as
+corrected 2026-11-13), log loss 0.5230,
 ahead of Torvik (8.85 vs 8.98 on shared games). Pilot results are in `pilot/out/`, the plan in
 `plan.md`, tasks in `todo.md` (Up next).
 
@@ -61,11 +62,19 @@ can't take a bid.
 | ESPN bulk files ([sportsdataverse-data releases](https://github.com/sportsdataverse/sportsdataverse-data/releases)) | Schedule, team box, play-by-play (shots with coordinates, free throws) | Free, no key; refreshed daily in season |
 | [CollegeBasketballData](https://collegebasketballdata.com/) API | ESPN↔CBBD id map, conferences, period scores, seeds, closing lines, polls (final seasons), recruit ranks | `CFBD_API_KEY` (same key as CFB; quota shared, 1,000 calls/month): 8 calls per past season, ≤ 2 a day in season |
 | [Torvik](https://barttorvik.com/) CSV / JSON | Preseason ratings (time machine, day before opening night) and player tables (BPM, minutes) for the prior; benchmarks | Free, no key |
-| ESPN APIs (core, site) | D1 membership by season; box scores of the ~60 completed games missing from the bulk files; daily injury report; live-season polls; team abbreviations for the dashboard | Free, no key |
+| ESPN APIs (core, site) | D1 membership by season; box scores of the ~60 completed games missing from the bulk files; daily injury report; live-season polls; team abbreviations for the dashboard; every book's line for neutral-site games, games whose CBBD providers disagree on the favourite and games CBBD has no line for (core odds, `data/raw/espn/odds/`) | Free, no key |
+| [Sportsbook Review odds archive](https://www.sportsbookreviewsonline.com/scoresoddsarchives/ncaabasketball/ncaabasketballoddsarchives.htm) | Closing spread and total with the favourite named by team, 2014-15 to 2020-21: the side of neutral-site lines where ESPN's books can't be trusted (`data/raw/sbr/`) | Free, one file a season |
 | `data/d1_transitions.csv` | Teams moving up to D1 and their first NCAA-tournament-eligible season (from school and NCAA announcements) | Hand-kept |
 
 Raw files are cached in `data/raw/` and never re-fetched once a season is final (after May 1).
 Torvik team names map to ESPN ids by normalised name plus `data/torvik_names.csv`.
+
+Closing lines: CBBD's providers sometimes quote a neutral-site game from the other side, so the
+favourite comes from the odds archive (to 2020-21), else ESPN's books (every book off a neutral
+court, on one only the book-seasons in `ESPN_BOOKS`, `R/02_prep.R`, whose neutral-site lines fit the
+results; diagnostics in `data/espn_books.csv`), else CBBD when its providers agree and the game is
+not on a neutral court. The size is CBBD's where it has a line. `spread_source` records the side's
+source and `line_filled` a line CBBD did not have.
 
 DuckDB tables (`data/cbb.duckdb`): `games` (both divisions, lines, both neutral flags, `site`),
 `d1_teams` (membership, conference, eligibility), `shots`, `free_throws`, `game_live`,
