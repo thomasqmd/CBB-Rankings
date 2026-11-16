@@ -107,7 +107,7 @@ build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_
   # unplayed games from the latest snapshot of the season
   bt <- need(backtest$games[backtest$games$season %in% seasons, ], "pred_total")
   sides <- dplyr::bind_rows(lapply(games[as.character(seasons)], function(g) {
-    g <- need(g[g$division %in% "d1", ], c("home_missing", "away_missing"))
+    g <- need(g[g$division %in% "d1", ], c("home_missing", "away_missing", "cbbd_status"))
     g$conf_game <- !is.na(g$home_conf) & g$home_conf == g$away_conf
     b <- bt[match(paste(g$season, g$game_id), paste(bt$season, bt$game_id)), ]
     latest <- max(rt$snap_date[rt$season == g$season[1]])
@@ -124,6 +124,9 @@ build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_
     bench <- sort(lr$rating, decreasing = TRUE)[max(1, round(lp$bench_rank))]
     pb <- function(opp, v) stats::pt((bench - rate(opp) + lp$hca * v) / (lp$sigma_game / sqrt(dplyr::coalesce(g$poss_reg, 70) / 70)), df = lp$nu)
     played <- g$played %in% TRUE
+    # unplayed games CBBD lists as postponed or cancelled: no projection
+    off <- ifelse(!played & g$cbbd_status %in% c("postponed", "cancelled", "canceled"), sub("canceled", "cancelled", g$cbbd_status), NA)
+    fut_m[!is.na(off)] <- NA; fut_wp[!is.na(off)] <- NA; fut_t[!is.na(off)] <- NA
     one <- function(home) {
       sg <- if (home) 1 else -1
       data.frame(s = g$season, game_id = g$game_id, date = format(g$game_date),
@@ -133,7 +136,7 @@ build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_
                  conf_game = g$conf_game, tourn = g$tournament, ncaa_seed = if (home) g$home_seed else g$away_seed,
                  result = ifelse(played, ifelse((g$home_score - g$away_score) * sg > 0, "W", "L"), NA),
                  pts = ifelse(played, if (home) g$home_score else g$away_score, NA), opp_pts = ifelse(played, if (home) g$away_score else g$home_score, NA),
-                 ot = g$ot %in% TRUE & played,
+                 ot = g$ot %in% TRUE & played, status = off,
                  pre_margin = round(sg * b$pred_margin, 1), pre_wp = round(if (home) b$p_home else 1 - b$p_home, 3), pre_total = round(b$pred_total, 1),
                  line = round(-sg * g$spread, 1), ou = g$total_line,
                  fut_margin = ifelse(played, NA, round(sg * fut_m, 1)), fut_wp = ifelse(played, NA, round(if (home) fut_wp else 1 - fut_wp, 3)),

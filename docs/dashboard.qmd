@@ -747,7 +747,7 @@ teamBody = {
     return htl.html`<tr>
       <td class="muted" style="width:70px">${dayFmt(g.date).replace(/^\w+, /, "")}</td>
       <td>${teamCell(o, `${g.venue === "A" ? "Away" : g.venue === "N" ? "Neutral" : "Home"}${o.prk ? ` (${o.rrk ?? "–"}/${o.prk})` : " · non-D1"}${g.tourn ? ` · ${g.tourn}` : ""}`, 28)}</td>
-      <td>${played ? htl.html`<strong class=${win ? "up" : "down"}>${win ? "W" : "L"} ${g.pts}–${g.opp_pts}${g.ot ? " OT" : ""}</strong>${g.missing >= 0.1 ? htl.html` <span class="note" title="Share of usual minutes missing">· short ${Math.round(g.missing * 100)}%</span>` : ""}` : htl.html`<span class="muted">to play</span>`}</td>
+      <td>${played ? htl.html`<strong class=${win ? "up" : "down"}>${win ? "W" : "L"} ${g.pts}–${g.opp_pts}${g.ot ? " OT" : ""}</strong>${g.missing >= 0.1 ? htl.html` <span class="note" title="Share of usual minutes missing">· short ${Math.round(g.missing * 100)}%</span>` : ""}` : htl.html`<span class="muted">${g.status ? g.status[0].toUpperCase() + g.status.slice(1) : "to play"}</span>`}</td>
       <td class="n">${mm == null ? "–" : fmtSigned(-mm)}</td>
       <td class="n muted hide-sm">${g.line == null ? "–" : fmtSigned(-g.line)}</td>
       <td class="hide-xs">${wp == null ? "–" : pbar(wp, played ? "var(--field)" : "var(--pow)", 80)}</td>
@@ -989,13 +989,16 @@ gamesBody = {
       <div class="gline"><span><span class="note">Model</span> ${favLine(g, mm)}</span><span><span class="note">Vegas</span> ${favLine(g, g.line)}</span>
         ${closer ? htl.html`<span style=${{ fontWeight: 700, color: closer === "Model" ? "var(--up)" : "var(--ink-3)" }}>${closer === "Model" ? "✓ Model closer" : closer === "Vegas" ? "Vegas closer" : "Tie"}</span>` : ""}</div></article>`
   }
-  const up = gameRows(gamesDay).filter(g => g.result == null).filter(keep).sort((a, b) => rankKey(a) - rankKey(b))
+  const up = gameRows(gamesDay).filter(g => g.result == null && !g.status).filter(keep).sort((a, b) => rankKey(a) - rankKey(b))
+  const off = gameRows(gamesDay).filter(g => g.result == null && g.status).filter(keep)
   const fin = gamesFinal.filter(keep).sort((a, b) => rankKey(a) - rankKey(b))
   const empty = t => htl.html`<p class="note">${t}</p>`
   return htl.html`<div style="display:flex;flex-direction:column;gap:36px">
-    ${up.length || gameRows(gamesDay).some(g => g.result == null) ? htl.html`<section><div class="sec-h"><div>${eyebrow("Upcoming · not played yet", "var(--pow-t)")}<h2 class="disp">${dayFmt(gamesDay)}</h2></div>
+    ${up.length || gameRows(gamesDay).some(g => g.result == null && !g.status) ? htl.html`<section><div class="sec-h"><div>${eyebrow("Upcoming · not played yet", "var(--pow-t)")}<h2 class="disp">${dayFmt(gamesDay)}</h2></div>
       <span class="note">Italic numbers are projected scores. Bar: the away team's chance to win.</span></div>
       ${up.length ? htl.html`<div class="cards">${up.map(upCard)}</div>` : empty("No games match these filters.")}</section>` : ""}
+    ${off.length ? htl.html`<section>${eyebrow("Postponed or cancelled", "var(--ink-3)")}
+      <p class="note">${off.map(g => `${g.opp} ${g.venue === "N" ? "vs." : "at"} ${g.team} (${g.status})`).join(" · ")}</p></section>` : ""}
     ${gamesFinal.length ? htl.html`<section><div class="sec-h"><div>${eyebrow("Final · already played", "var(--navy)")}<h2 class="disp">${dayFmt(gamesDay)} results</h2></div>
       <span class="note">Model: the latest snapshot before tip-off. Grey: the losing side.</span></div>
       ${fin.length ? htl.html`<div class="cards">${fin.map(finCard)}</div>` : empty("No games match these filters.")}</section>` : ""}
