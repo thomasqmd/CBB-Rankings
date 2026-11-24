@@ -180,11 +180,13 @@ list(
     .(as.call(c(quote(list), setNames(lapply(SEASONS, \(s) sym("prior", s)), SEASONS)))),
     .(as.call(c(quote(list), setNames(lapply(SEASONS, \(s) sym("teams", s)), SEASONS))))
   ))),
-  # The dashboard shows the last DASH_SEASONS seasons
+  # The dashboard shows the last DASH_SEASONS seasons, with Torvik's ratings beside ours
   tar_target_raw("dashboard_data", bquote(build_dashboard_data(snapshots,
     .(as.call(c(quote(list), setNames(lapply(utils::tail(SEASONS, DASH_SEASONS), \(s) sym("games", s)), utils::tail(SEASONS, DASH_SEASONS))))),
     .(as.call(c(quote(list), setNames(lapply(utils::tail(SEASONS, DASH_SEASONS), \(s) sym("teams", s)), utils::tail(SEASONS, DASH_SEASONS))))),
-    backtest, cfg))),
+    backtest, cfg,
+    torvik = .(as.call(c(quote(dplyr::bind_rows), lapply(setdiff(utils::tail(SEASONS, DASH_SEASONS), PRIOR_SEASON), \(s) sym("torvik", s))))),
+    champs = champions_db))),
   # The stylesheet and logos are tracked too, so editing only them re-renders the dashboard
   tar_quarto(dashboard, path = "docs/dashboard.qmd", quiet = TRUE,
              extra_files = c("docs/styles/cbb.css", "docs/logos/TRlogo.svg", "docs/logos/TRlogo-dark.svg")),

@@ -61,7 +61,7 @@ can't take a bid.
 | :--- | :--- | :--- |
 | ESPN bulk files ([sportsdataverse-data releases](https://github.com/sportsdataverse/sportsdataverse-data/releases)) | Schedule, team box, play-by-play (shots with coordinates, free throws) | Free, no key; refreshed daily in season |
 | [CollegeBasketballData](https://collegebasketballdata.com/) API | ESPN↔CBBD id map, conferences, period scores, seeds, closing lines, polls (final seasons), recruit ranks | `CFBD_API_KEY` (same key as CFB; quota shared, 1,000 calls/month): 8 calls per past season, ≤ 2 a day in season |
-| [Torvik](https://barttorvik.com/) CSV / JSON | Preseason ratings (time machine, day before opening night) and player tables (BPM, minutes) for the prior; benchmarks | Free, no key |
+| [Torvik](https://barttorvik.com/) CSV / JSON | Preseason ratings (time machine, day before opening night) and player tables (BPM, minutes) for the prior; benchmarks; ratings, T-Rank and WAB the day before each snapshot, shown on the dashboard | Free, no key |
 | ESPN APIs (core, site) | D1 membership by season; box scores of the ~60 completed games missing from the bulk files; daily injury report; live-season polls; team abbreviations for the dashboard; every book's line for neutral-site games, games whose CBBD providers disagree on the favourite and games CBBD has no line for (core odds, `data/raw/espn/odds/`) | Free, no key |
 | [Sportsbook Review odds archive](https://www.sportsbookreviewsonline.com/scoresoddsarchives/ncaabasketball/ncaabasketballoddsarchives.htm) | Closing spread and total with the favourite named by team, 2014-15 to 2020-21: the side of neutral-site lines where ESPN's books can't be trusted (`data/raw/sbr/`) | Free, one file a season |
 | `data/d1_transitions.csv` | Teams moving up to D1 and their first NCAA-tournament-eligible season (from school and NCAA announcements) | Hand-kept |
@@ -102,7 +102,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cbb-rankings.injurie
 | `R/04_resume.R` | WAB per draw, the season simulation (rest of the regular season, conference tournaments, field odds), team sheet (quadrants, SOR, luck, Colley) |
 | `R/05_snapshot.R` | Snapshot dates, one snapshot's outputs, backtest (margins, win probabilities, totals), coverage report |
 | `R/06_roster.R` | Torvik player tables and CBBD recruits → roster features (returning, transfers, freshmen) and the roster prior regression |
-| `R/07_dashboard.R` | `build_dashboard_data()`: compact tables for the dashboard |
+| `R/07_dashboard.R` | `build_dashboard_data()`: compact tables for the dashboard, with Torvik's ratings and the resume recomputed from them (`torvik_resume()` in `R/04_resume.R`, "Torvik WAB") beside ours |
 | `R/08_analysis.R` | The methods paper's analyses (built with `CBB_PAPER=1` only): final-snapshot checks (PPC, priorsense, LOO, margin families), vague-prior refits and pooled priors, leave-one-season-out priors, ablations, least-squares baseline, Selection Monday refits (benchmark choice, SOR, MCSE), margin leakage, SBC, full-draw supplement, prior perturbation, induced priors, resume vs. committee |
 | `paper/cbb-paper.qmd` | Methods paper (PDF), the CFB paper's structure for basketball; every number read from the store |
 | `docs/dashboard.qmd` | Quarto + Observable JS dashboard → `docs/index.html` (styles in `docs/styles/cbb.css`) |

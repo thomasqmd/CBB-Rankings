@@ -166,7 +166,9 @@ read_torvik_tm <- function(f) {
   con <- gzcon(file(f, "rb"))
   on.exit(close(con))                     # fromJSON leaves a connection open; a season's snapshots would exhaust R's 128
   x <- jsonlite::fromJSON(con)
-  data.frame(team = x[, 2], record = x[, 4], adj_o = as.numeric(x[, 5]), adj_d = as.numeric(x[, 7]), adj_t = as.numeric(x[, 45]))
+  # rank (column 1) is T-Rank, ordered by Barthag; wab (42) is Torvik's own Wins Above Bubble
+  data.frame(team = x[, 2], record = x[, 4], adj_o = as.numeric(x[, 5]), adj_d = as.numeric(x[, 7]), adj_t = as.numeric(x[, 45]),
+             rank = as.integer(x[, 1]), wab = as.numeric(x[, 42]))
 }
 
 # Torvik's time-machine files have no header; columns follow team_results.csv (team 2, conf 3,

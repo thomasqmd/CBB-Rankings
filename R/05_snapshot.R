@@ -114,7 +114,8 @@ season_final_prior <- function(snaps) {
 }
 
 # Torvik's ratings at each snapshot: the time-machine file for the day before (so he has the
-# same games the snapshot has), Torvik names -> ESPN ids. lg_o / lg_t: D1 averages in that file.
+# same games the snapshot has), Torvik names -> ESPN ids. lg_o / lg_t: D1 averages in that file;
+# rank: T-Rank; wab: Torvik's own WAB.
 torvik_snapshots <- function(dates, teams, season, overrides = "data/torvik_names.csv") {
   dplyr::bind_rows(lapply(dates$snap_date, function(d) {
     f <- fetch_torvik_tm(d - 1)
@@ -123,7 +124,7 @@ torvik_snapshots <- function(dates, teams, season, overrides = "data/torvik_name
     lg_o <- mean(tv$adj_o); lg_t <- mean(tv$adj_t)
     tv <- torvik_team_ids(tv, teams, overrides)
     data.frame(season = as.integer(season), snap_date = d, team_id = tv$team_id, adj_o = tv$adj_o, adj_d = tv$adj_d,
-               adj_t = tv$adj_t, lg_o = lg_o, lg_t = lg_t)
+               adj_t = tv$adj_t, lg_o = lg_o, lg_t = lg_t, rank = tv$rank, wab = tv$wab)
   }))
 }
 

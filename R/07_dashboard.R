@@ -32,7 +32,11 @@ snap_label <- function(d, kind) {
 
 # snapshots: combine_snapshots() output; games: list of games_<s>; teams: list of teams_<s>;
 # backtest: run_backtest() output (its games carry each prediction with its result)
-build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_config(), seasons = NULL) {
+# torvik: torvik_snapshots() rows (Torvik's ratings the day before each snapshot), shown beside ours
+#   with the resume recomputed from them (tv_wab, tv_rrk; torvik_resume()) and Torvik's own WAB;
+# champs: conference champions (season, conf, game_date, team_id), for that resume's automatic bids
+build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_config(), seasons = NULL,
+                                 torvik = NULL, champs = NULL) {
   all_s <- sort(unique(snapshots$ratings$season))
   seasons <- if (is.null(seasons)) utils::tail(all_s, DASH_SEASONS) else intersect(seasons, all_s)
   keep <- function(df) df[df$season %in% seasons, ]
@@ -78,6 +82,34 @@ build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_
   el <- dplyr::bind_rows(lapply(teams[as.character(seasons)], \(t) data.frame(team_id = t$team_id, elig = team_eligible(t))), .id = "season")
   r$elig <- el$elig[match(paste(r$season, r$team_id), paste(el$season, el$team_id))] %in% TRUE
 
+  # Torvik at each snapshot: his rating, T-Rank and own WAB, and our resume formula on his ratings
+  r$tv <- r$tv_rk <- r$tv_pwab <- r$tv_pwab_rk <- r$tv_wab <- r$tv_rrk <- NA
+  tv <- if (is.null(torvik)) NULL else torvik[torvik$season %in% seasons, ]
+  if (!is.null(tv) && nrow(tv)) {
+    tv$tv <- tv$adj_o - tv$adj_d
+    tv <- need(tv, c("rank", "wab"))
+    m <- match(paste(key(r), r$team_id), paste(key(tv), tv$team_id))
+    r$tv <- tv$tv[m]; r$tv_rk <- tv$rank[m]; r$tv_pwab <- tv$wab[m]
+    # ranks among the D1 teams we list (Torvik's file can hold a team in transition we don't)
+    r <- r |>
+      dplyr::group_by(season, snap_date) |>
+      dplyr::mutate(tv_rk = rank(tv_rk, ties.method = "first", na.last = "keep"),
+                    tv_pwab_rk = rank(-tv_pwab, ties.method = "first", na.last = "keep")) |>
+      dplyr::ungroup()
+    for (k in unique(key(r)[!is.na(r$rrk)])) {
+      i <- which(key(r) == k); s <- r$season[i[1]]; d <- r$snap_date[i[1]]
+      p <- pa[key(pa) == k, ]
+      g <- games[[as.character(s)]]
+      g <- g[g$division %in% "d1" & g$played %in% TRUE & g$game_date < d, ]
+      ch <- if (is.null(champs)) integer() else champs$team_id[champs$season == s & champs$game_date < d]
+      res <- torvik_resume(data.frame(team_id = r$team_id[i], conf = r$conf[i], eligible = r$elig[i]), g,
+                           data.frame(team_id = r$team_id[i], tv = r$tv[i]), r$rating[i],
+                           list(hca = p$hca, sigma_game = p$sigma_game, nu = p$nu), field_size(s, cfg), ch)
+      j <- match(r$team_id[i], res$team_id)
+      r$tv_wab[i] <- res$tv_wab[j]; r$tv_rrk[i] <- res$tv_rrk[j]
+    }
+  }
+
   num <- function(x, d) round(x, d)
   ranks <- data.frame(
     s = r$season, w = wof(r), id = r$team_id, team = r$team, conf = r$conf, elig = r$elig,
@@ -89,7 +121,9 @@ build_dashboard_data <- function(snapshots, games, teams, backtest, cfg = model_
     sos = num(r$sos, 3), sos_rk = r$sos_rk, proj_wab = num(r$proj_wab, 2),
     p_field = num(r$p_field, 3), p_auto = num(r$p_auto, 3), p_al = num(r$p_at_large, 3), p_reg = num(r$p_conf_reg, 3),
     q1w = r$q1_w, q1l = r$q1_l, q2w = r$q2_w, q2l = r$q2_l, q3w = r$q3_w, q3l = r$q3_l, q4w = r$q4_w, q4l = r$q4_l,
-    luck = num(r$luck, 2), sor_rk = r$sor_rk, colley_rk = r$colley_rk, ap = r$ap, coaches = r$coaches, seed = r$seed)
+    luck = num(r$luck, 2), sor_rk = r$sor_rk, colley_rk = r$colley_rk, ap = r$ap, coaches = r$coaches, seed = r$seed,
+    tv = num(r$tv, 1), tv_rk = r$tv_rk, tv_wab = num(r$tv_wab, 2), tv_rrk = r$tv_rrk,
+    tv_pwab = num(r$tv_pwab, 2), tv_pwab_rk = r$tv_pwab_rk)
 
   pa$w <- wof(pa); gt$w <- wof(gt)
   snaps <- data.frame(s = sn$season, w = sn$w, date = format(sn$snap_date), kind = sn$kind, label = snap_label(sn$snap_date, sn$kind))

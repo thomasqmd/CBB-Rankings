@@ -155,7 +155,7 @@ htl.html`<div>${rankView === "Rank chart" ? rankChart : rankingsTable}</div>`
 ```{ojs}
 htl.html`<section class="team-top"><div class="tc" style="gap:18px">${logo(tRow.id, 64)}<div>
   <h1 class="disp">${tRow.team}</h1>
-  <span style="color:var(--ink-2)">${[tRow.conf, `${tRow.wins ?? 0}–${tRow.losses ?? 0}`, tRow.ap ? `AP #${tRow.ap}` : null, tRow.seed ? `NCAA ${tRow.seed} seed` : null, tRow.elig ? null : "Not NCAA-tournament eligible"].filter(Boolean).join(" · ")}</span></div></div></section>`
+  <span style="color:var(--ink-2)">${[tRow.conf, `${tRow.wins ?? 0}–${tRow.losses ?? 0}`, tRow.ap ? `AP #${tRow.ap}` : null, tRow.tv_rk ? `Torvik #${tRow.tv_rk}` : null, tRow.seed ? `NCAA ${tRow.seed} seed` : null, tRow.elig ? null : "Not NCAA-tournament eligible"].filter(Boolean).join(" · ")}</span></div></div></section>`
 ```
 ::: {.ctl-row .ctl}
 ```{ojs}
@@ -464,9 +464,9 @@ pbar = (p, color, w = 100) => p == null ? htl.html`<span class="muted">–</span
 eyebrow = (t, color = "var(--link)") => htl.html`<div class="eb" style=${{ color }}>${t}</div>`
 kv = (k, v, s) => htl.html`<div class="kv"><span class="k">${k}</span><span class="v">${v}</span>${s ? htl.html`<span class="s">${s}</span>` : ""}</div>`
 secH = (title, right) => htl.html`<div class="sec-h"><h2 class="disp">${title}</h2>${right ?? ""}</div>`
-ibar = (v, lo, hi, [min, max], color) => {
-  const x = d3.scaleLinear([min, max], [6, 114]).clamp(true)
-  return htl.svg`<svg width="120" height="16" viewBox="0 0 120 16" aria-hidden="true">
+ibar = (v, lo, hi, [min, max], color, w = 120) => {
+  const x = d3.scaleLinear([min, max], [6, w - 6]).clamp(true)
+  return htl.svg`<svg width=${w} height="16" viewBox=${`0 0 ${w} 16`} aria-hidden="true">
     ${min < 0 && max > 0 ? htl.svg`<line x1=${x(0)} x2=${x(0)} y1="2" y2="14" stroke="var(--field)"/>` : ""}
     <line x1=${x(lo)} x2=${x(hi)} y1="8" y2="8" stroke=${color} stroke-opacity="0.3" stroke-width="4" stroke-linecap="round"/>
     <circle cx=${x(v)} cy="8" r="5" fill=${color} stroke="var(--paper)" stroke-width="1.5"/></svg>`
@@ -530,7 +530,9 @@ SORTS = [
   { key: "off", label: "Offense", col: "off_rk" },
   { key: "def", label: "Defense", col: "def_rk" },
   { key: "sos", label: "Schedule", col: "sos_rk" },
-  { key: "ap", label: "AP poll", col: "ap" }
+  { key: "ap", label: "AP poll", col: "ap" },
+  { key: "tv", label: "Torvik", col: "tv_rk" },
+  { key: "tvres", label: "Torvik WAB", col: "tv_rrk" }
 ].filter(s => hasResume || !["resume", "sos"].includes(s.key)).filter(s => d1.some(d => d[s.col] != null))
 rankingsHeadline = {
   if (!hasResume) return `${byPow[0].team} opens No. 1 in power`
@@ -566,6 +568,10 @@ rankingsTable = {
   const wDom = [Math.min(-12, d3.min(d1, d => d.wab_lo) ?? -12), Math.max(4, d3.max(d1, d => d.wab_hi) ?? 4)]
   const pDom = d3.extent(d1.flatMap(d => [d.pw_lo, d.pw_hi]))
   const hc = k => sort.key === k ? "var(--navy)" : "var(--ink-3)"
+  // Torvik's two columns appear once his ratings and our resume on them exist; the grid tightens
+  // to make room (.rk.tv in cbb.css)
+  const hasTv = hasResume && d1.some(d => d.tv_rrk != null)
+  const barW = hasTv ? 104 : 120
   const rng = (lo, hi) => lo == null || lo === hi ? "" : htl.html`<div class="note" style="font-size:12px;font-weight:400;line-height:1.1">${lo}–${hi}</div>`
   const showCut = sort.key === "resume" && confPick === "all" && !q && hasResume
   const cutAfter = showCut ? rows.filter(d => d.wab > 0).at(-1)?.id : null
@@ -576,24 +582,27 @@ rankingsTable = {
       <div class="stick s2" role="cell">${sort.prev ? move(now, before) : ""}</div>
       <div class="stick s3" role="cell">${logo(d.id, 30)}<span class="tc-t">${teamLink(d)}<span class="tc-s">${d.conf}${d.elig ? "" : " · ineligible"}</span></span></div>
       <div class="c r" role="cell">${d.wins ?? 0}–${d.losses ?? 0}</div>
-      <div class="rk-val" role="cell">${hasResume ? [htl.html`<span class="res-t">${fmtSigned(d.wab, 2)}</span>`, ibar(d.wab, d.wab_lo, d.wab_hi, wDom, "var(--res)")] : htl.html`<span class="muted">–</span>`}</div>
+      <div class="rk-val" role="cell">${hasResume ? [htl.html`<span class="res-t">${fmtSigned(d.wab, 2)}</span>`, ibar(d.wab, d.wab_lo, d.wab_hi, wDom, "var(--res)", barW)] : htl.html`<span class="muted">–</span>`}</div>
       <div class="c b r" role="cell">${d.rrk ?? "–"}${rng(d.rrk_lo, d.rrk_hi)}</div>
       <div class="c r" role="cell" title=${d.p_auto != null ? `Automatic bid ${fmtPct(d.p_auto)} · at-large ${fmtPct(d.p_al)}` : ""}>${hasOdds ? fmtPct(d.p_field) : "–"}</div>
-      <div class="rk-val" role="cell"><span class="pow-t">${fmtSigned(d.pw)}</span>${ibar(d.pw, d.pw_lo, d.pw_hi, pDom, "var(--pow)")}</div>
+      <div class="rk-val" role="cell"><span class="pow-t">${fmtSigned(d.pw)}</span>${ibar(d.pw, d.pw_lo, d.pw_hi, pDom, "var(--pow)", barW)}</div>
       <div class="c b r" role="cell">${d.prk}${rng(d.prk_lo, d.prk_hi)}</div>
       <div class="c r" role="cell" title=${d.off == null ? "" : `${d.off.toFixed(1)} pts per 100 vs. an average D1 defense`}>${d.off_rk ?? "–"}</div>
       <div class="c r" role="cell" title=${d.def == null ? "" : `${d.def.toFixed(1)} pts per 100 allowed vs. an average D1 offense`}>${d.def_rk ?? "–"}</div>
       <div class="c r" role="cell">${d.sos_rk ?? "–"}</div>
       <div class="c r" role="cell">${d.ap ?? "–"}</div>
+      ${hasTv ? [htl.html`<div class="c r" role="cell" title=${d.tv_rk == null ? "" : `#${d.tv_rk} in T-Rank`}>${d.tv == null ? "–" : fmtSigned(d.tv)}</div>`,
+        htl.html`<div class="c b r" role="cell" title=${d.tv_wab == null ? "" : `${fmtSigned(d.tv_wab, 2)} WAB on Torvik's ratings`}>${d.tv_rrk ?? "–"}</div>`] : ""}
     </div>${d.id === cutAfter ? htl.html`<div class="rk-cut" role="row"><span><span class="eb">Bubble line · WAB 0</span>Teams above have won more than the last team into the field would have with their schedule.</span></div>` : ""}`
   }
   return htl.html`<div>
-    <div class="rk-box"><div class="rk" role="table" aria-labelledby="d1-title">
+    <div class="rk-box"><div class=${hasTv ? "rk tv" : "rk"} role="table" aria-labelledby="d1-title">
       <div class="rk-head-rows">
         <div class="rk-row rk-groups" role="presentation">
           <div style="grid-column:5 / span 3;color:var(--res-t);border-bottom:2px solid var(--res)">Resume</div>
           <div style="grid-column:8 / span 4;color:var(--pow-t);border-bottom:2px solid var(--pow)">Power</div>
           <div style="grid-column:12 / span 2;color:var(--ink-3);border-bottom:2px solid var(--field)">Context</div>
+          ${hasTv ? htl.html`<div style="grid-column:14 / span 2;color:var(--ink-3);border-bottom:2px solid var(--field)">Torvik</div>` : ""}
         </div>
         <div class="rk-row rk-cols" role="row">
           <div class="stick s1" role="columnheader">#</div>
@@ -609,6 +618,8 @@ rankingsTable = {
           <div class="r" role="columnheader" style=${{ color: hc("def") }}>Def</div>
           <div class="r" role="columnheader" style=${{ color: hc("sos") }}>SOS</div>
           <div class="r" role="columnheader" style=${{ color: hc("ap") }}>AP</div>
+          ${hasTv ? [htl.html`<div class="r" role="columnheader" title="Bart Torvik's rating the day before this snapshot, points per 100 possessions vs. an average D1 team" style=${{ color: hc("tv") }}>Rating</div>`,
+            htl.html`<div class="r" role="columnheader" title="Rank of the WAB computed with Torvik's ratings in place of ours" style=${{ color: hc("tvres") }}>WAB rank</div>`] : ""}
         </div>
       </div>
       <div class="rk-body">${rows.map(row)}</div>
@@ -616,7 +627,7 @@ rankingsTable = {
     </div></div>
     <div class="rk-foot">
       <span>${snap.passed ? "✓ Model converged" : "⚠ Convergence checks failed"} · home court ${fmtSigned(snap.hca)} pts</span>
-      <span>WAB is wins above what the last team into the field would have on the same schedule. Rating is points per 100 possessions vs. an average D1 team. Dot is the median; bars and ranges are 80% intervals. Field is the chance to make the NCAA tournament.</span>
+      <span>WAB is wins above what the last team into the field would have on the same schedule. Rating is points per 100 possessions vs. an average D1 team. Dot is the median; bars and ranges are 80% intervals. Field is the chance to make the NCAA tournament.${hasTv ? " Torvik is Bart Torvik's rating the day before; WAB rank is the same WAB computed with his ratings in place of ours." : ""}</span>
     </div></div>`
 }
 ```
@@ -762,7 +773,9 @@ teamBody = {
         ${rating("Power", `${fmtSigned(tRow.pw)} per 100`, tRow.prk, "var(--pow)", mvTxt(tRow.prk, pm?.prk))}
         ${tRow.off == null ? "" : rating("Offense", `${tRow.off.toFixed(1)} per 100`, tRow.off_rk, "var(--navy)", "points scored")}
         ${tRow.def == null ? "" : rating("Defense", `${tRow.def.toFixed(1)} per 100`, tRow.def_rk, "var(--navy)", "points allowed")}
-        ${tRow.tempo == null ? "" : rating("Tempo", `${tRow.tempo.toFixed(1)} poss.`, tRow.tempo_rk, "var(--ink-3)", "per 40 minutes")}</div>
+        ${tRow.tempo == null ? "" : rating("Tempo", `${tRow.tempo.toFixed(1)} poss.`, tRow.tempo_rk, "var(--ink-3)", "per 40 minutes")}
+        ${tRow.tv == null ? "" : rating("Torvik", `${fmtSigned(tRow.tv)} per 100`, tRow.tv_rk, "var(--ink-3)", "published rating")}
+        ${tRow.tv_wab == null ? "" : rating("Torvik WAB", `${fmtSigned(tRow.tv_wab, 2)} WAB`, tRow.tv_rrk, "var(--ink-3)", "resume on Torvik's ratings")}</div>
       <div style="padding-top:16px">${eyebrow("Outlook", "var(--ink-3)")}${outlook}</div>
       ${sheet}
       ${mini ? htl.html`<div style="padding-top:22px;margin-top:18px;border-top:1px solid var(--rule)">
@@ -840,6 +853,8 @@ resumeBody = {
     row("WAB", htl.html`${fmtSigned(a.wab, 2)} <span class="note">#${a.rrk}</span>`, htl.html`<span class="note">#${b.rrk}</span> ${fmtSigned(b.wab, 2)}`, cmp(a.wab, b.wab)),
     row("Rank · 80%", htl.html`#${a.rrk}${rng(a)}`, htl.html`#${b.rrk}${rng(b)}`, cmp(a.rrk, b.rrk, false)),
     ...(hasOdds ? [row("NCAA field", fmtPct(a.p_field), fmtPct(b.p_field), cmp(a.p_field, b.p_field))] : []),
+    ...(a.tv_wab == null || b.tv_wab == null ? [] : [row("Torvik WAB", htl.html`${fmtSigned(a.tv_wab, 2)} <span class="note">#${a.tv_rrk}</span>`,
+      htl.html`<span class="note">#${b.tv_rrk}</span> ${fmtSigned(b.tv_wab, 2)}`, cmp(a.tv_wab, b.tv_wab))]),
     row("SOR", `#${a.sor_rk ?? "–"}`, `#${b.sor_rk ?? "–"}`, cmp(a.sor_rk, b.sor_rk, false)),
     row("Schedule", `#${a.sos_rk ?? "–"}`, `#${b.sos_rk ?? "–"}`, cmp(a.sos_rk, b.sos_rk, false)),
     row("Record", `${a.wins ?? 0}–${a.losses ?? 0}`, `${b.wins ?? 0}–${b.losses ?? 0}`, null),
@@ -875,7 +890,8 @@ powerBody = {
   const m = matchup, { a, b } = m
   const side = mSide
   const stats = [["Power", "pw", "prk", v => fmtSigned(v), true], ["Offense", "off", "off_rk", v => v.toFixed(1), true],
-    ["Defense", "def", "def_rk", v => v.toFixed(1), false], ["Tempo", "tempo", "tempo_rk", v => v.toFixed(1), null], ["Resume", "wab", "rrk", v => fmtSigned(v, 2), true]]
+    ["Defense", "def", "def_rk", v => v.toFixed(1), false], ["Tempo", "tempo", "tempo_rk", v => v.toFixed(1), null], ["Torvik", "tv", "tv_rk", v => fmtSigned(v), true],
+    ["Resume", "wab", "rrk", v => fmtSigned(v, 2), true]]
     .filter(([, k]) => a[k] != null && b[k] != null)
   const tape = stats.map(([lab, k, rk, f, hi]) => {
     const aw = hi == null ? null : hi ? a[k] > b[k] : a[k] < b[k]
@@ -906,6 +922,7 @@ powerBody = {
         <span class="split"><span style=${{ width: `${m.pA * 100}%`, background: "var(--pow)" }}></span><span style="flex:1;background:var(--res)"></span></span>
         <span style="display:flex;justify-content:space-between;width:100%;font-weight:700"><span class="pow-t">${fmtPct(m.pA)}</span><span class="res-t">${fmtPct(1 - m.pA)}</span></span>
         ${m.ptsA == null ? htl.html`<span style="font-size:15px;color:var(--ink-2)">${m.poss.toFixed(0)} possessions</span>` : htl.html`<span style="font-size:15px;color:var(--ink-2)">Projected score <strong style="color:var(--ink)">${Math.round(m.ptsA)}–${Math.round(m.ptsB)}</strong> · ${m.poss.toFixed(0)} possessions</span>`}
+        ${a.tv == null || b.tv == null ? "" : htl.html`<span style="font-size:15px;color:var(--ink-2)">Torvik line <strong style="color:var(--ink)">${favTxt({ a, b, mean: (a.tv - b.tv + snap.hca100 * venue) * m.poss / 100 })}</strong></span>`}
       </div>${side(b, "b")}</section>
     <section class="tape">${tape}<div class="tape-row"><span class="l">${a.wins ?? 0}–${a.losses ?? 0}</span><span class="eb">Record</span><span class="l">${b.wins ?? 0}–${b.losses ?? 0}</span></div></section>
     <section><div class="chart-scroll">${chart}</div></section></div>`
@@ -1239,7 +1256,10 @@ pollsBody = {
     "Big Sky": "BSky", "Big South": "BSth", "Big West": "BW", "Southland": "SLC", "Patriot": "PL", "Summit": "Sum", "Horizon": "HL" }
   const rec = d => { const c = crec.get(d.id); return `${confAbbr[d.conf] ?? d.conf} · ${d.wins ?? 0}–${d.losses ?? 0}${c ? ` (${c[0]}–${c[1]})` : ""}` }
   const sys = [["ap", "AP poll", "Media voters"], ["coaches", "Coaches poll", "D1 head coaches"], ["prk", "Our power", "How good, per 100 possessions"],
-    ["colley_rk", "Colley matrix", "Record and schedule only"], ["sor_rk", "Strength of record", "Chance a top-25 team does as well"]]
+    ["colley_rk", "Colley matrix", "Record and schedule only"], ["sor_rk", "Strength of record", "Chance a top-25 team does as well"],
+    ...(d1.some(d => d.tv_rk != null) ? [["tv_rk", "Torvik", "T-Rank, Bart Torvik's power rating"]] : []),
+    ...(d1.some(d => d.tv_rrk != null) ? [["tv_rrk", "Torvik WAB", "Our resume formula on Torvik's ratings"],
+      ["tv_pwab_rk", "Torvik's own WAB", "As he publishes it, against his bubble"]] : [])]
   const col = ([k, t, sub]) => {
     const rows = d1.filter(d => d[k] != null).sort((a, b) => a[k] - b[k]).slice(0, pollDepth)
     const head = htl.html`<h2 class="disp" style="font-size:24px">${t}</h2><span class="note">${sub}</span>`

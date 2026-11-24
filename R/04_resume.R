@@ -203,6 +203,49 @@ wab_draws <- function(fit, inp, games = inp$games, field = 68L, champs = NULL, t
   wab
 }
 
+# The resume recomputed from Torvik's ratings (adjusted offence minus defence, points per 100, from
+# his time-machine file for the day before the snapshot): WAB with Torvik's ratings in place of the
+# power ratings and the same benchmark rule as the published resume, applied to Torvik. Each
+# conference's champion takes the automatic bid once its final is played, else the conference's
+# best Torvik-rated eligible team; the benchmark is the n_at_large-th best eligible team left.
+# Torvik's ratings are point estimates, so this is one number per team with no interval; the win
+# probability is the model's own, at the snapshot's posterior-mean home court, game noise and tail.
+# D1 teams missing from Torvik's file take the value a linear fit of Torvik on our rating gives
+# (and are left out of the benchmark's ranking).
+# teams: one snapshot's teams (team_id, conf, eligible); games: D1 games played before the snapshot;
+# tv: team_id, tv; rating: our power rating per teams row; par: hca, sigma_game, nu (per 100);
+# champs: team ids of the conference champions decided before the snapshot
+torvik_resume <- function(teams, games, tv, rating, par, field = 68L, champs = integer()) {
+  none <- data.frame(team_id = integer(), tv_wab = numeric(), tv_rrk = integer())
+  r <- tv$tv[match(teams$team_id, tv$team_id)]
+  have <- !is.na(r) & !is.na(rating)
+  if (!nrow(games) || sum(have) < field) return(none)
+  fit <- stats::lm(r ~ rating, data = data.frame(r = r[have], rating = rating[have]))
+  fill <- is.na(r) & !is.na(rating)
+  r[fill] <- stats::predict(fit, data.frame(rating = rating[fill]))
+  elig <- team_eligible(teams) & !is.na(r)
+  auto <- rep(FALSE, nrow(teams))
+  for (cf in setdiff(unique(teams$conf), c(NA, "Indep.", "Independent"))) {
+    k <- which(teams$conf == cf & elig)
+    if (!length(k)) next
+    ch <- k[teams$team_id[k] %in% champs]
+    auto[if (length(ch)) ch[1] else k[which.max(r[k])]] <- TRUE
+  }
+  bench <- sort(r[elig & !auto & have], decreasing = TRUE)[field - sum(auto)]
+  site <- game_site(games); w <- dplyr::coalesce(as.numeric(games$poss_reg), 70) / 70
+  long <- data.frame(team_id = c(games$home_id, games$away_id), opp_id = c(games$away_id, games$home_id), venue = c(site, -site),
+                     win = c(games$home_score > games$away_score, games$away_score > games$home_score), w = c(w, w))
+  oi <- match(long$opp_id, teams$team_id)
+  keep <- !is.na(oi) & long$team_id %in% teams$team_id & !is.na(r[oi])
+  long <- long[keep, ]; oi <- oi[keep]
+  if (!nrow(long)) return(none)
+  p_bench <- stats::pt((bench - r[oi] + par$hca * long$venue) / (par$sigma_game / sqrt(long$w)), df = par$nu)
+  wab <- tapply(long$win - p_bench, long$team_id, sum)
+  out <- data.frame(team_id = as.integer(names(wab)), tv_wab = as.vector(wab))
+  out$tv_rrk <- rank(-out$tv_wab, ties.method = "first")
+  out
+}
+
 # Resume table at a snapshot. p_pos = share of draws in which the team's WAB is positive;
 # p_field = P(auto bid) + P(at-large), from the season simulation.
 summarise_resume <- function(wab, inp) {
