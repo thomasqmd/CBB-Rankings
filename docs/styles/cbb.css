@@ -364,7 +364,8 @@ figure.plot, .plot-d6a7b5 { margin: 0; }
 .seedline .n { font-family: var(--display); font-size: 26px; font-weight: 600; color: var(--navy); line-height: 1; }
 .seedline .tms { display: flex; flex-direction: column; gap: 4px; }
 .seedline .tm { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.seedline .tm .auto { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--ink-3); }
+.seedline .tm .auto { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--ink-3); flex: none; }
+.seedline .tm .tc-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bubble { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 20px; }
 .bubble section { border-top: 3px double var(--navy); padding-top: 10px; }
 .qtbl td.q { text-align: center; font-weight: 600; }

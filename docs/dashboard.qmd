@@ -518,6 +518,12 @@ proj = {
   const field = [...autos, ...atl].sort((a, b) => (b.proj_wab ?? -99) - (a.proj_wab ?? -99))
   return { field, autos, atl, out, autoIds }
 }
+// Play-in games by seed line, at-large then automatic bids, best line first: the First Four in a
+// 68-team field; the 12-game Opening Round of the 76-team field from 2027 (two 11-line and four
+// 12-line games for the last at-large teams, two 15-line and four 16-line games for the lowest
+// automatic bids)
+PLAYIN = ({ 68: { atl: [[11, 2]], auto: [[16, 2]] }, 76: { atl: [[11, 2], [12, 4]], auto: [[15, 2], [16, 4]] } })[snap.field]
+nPlayAtl = PLAYIN ? 2 * d3.sum(PLAYIN.atl, d => d[1]) : 4
 ```
 
 <!-- ---- Rankings ---- -->
@@ -1051,17 +1057,30 @@ bracketBubble = {
     <div style="margin-top:8px">${rows.map(d => htl.html`<div class="poll-row"><span></span>${logo(d.id, 22)}<span class="nm">${teamLink(d)}</span><span class="r">${fmtPct(d.p_field)}</span></div>`)}</div></section>`
   const n = proj.atl.length
   return htl.html`<div>${secH("The bubble", htl.html`<span class="note">At-large teams by their chance to be in the field</span>`)}<div class="bubble">
-    ${col("Last four byes", proj.atl.slice(Math.max(0, n - 8), n - 4), "Safely in, for now")}
-    ${col("Last four in", proj.atl.slice(Math.max(0, n - 4)), "The First Four, if it ended today")}
+    ${col("Last four byes", proj.atl.slice(Math.max(0, n - nPlayAtl - 4), n - nPlayAtl), "Safely in, for now")}
+    ${col("Last four in", proj.atl.slice(Math.max(0, n - 4)), snap.field === 76 ? "In the Opening Round, if it ended today" : "The First Four, if it ended today")}
     ${col("First four out", proj.out.slice(0, 4), "Closest to getting in")}
     ${col("Next four out", proj.out.slice(4, 8), "Need help")}</div></div>`
 }
 bracketSeeds = {
   if (!hasOdds) return htl.html``
-  const lines = d3.groups(proj.field.map((d, i) => ({ ...d, line: Math.min(16, Math.floor(i / 4) + 1) })), d => d.line)
+  // The last at-large teams and the lowest automatic bids fill the play-in lines (PLAYIN), two
+  // teams to a slot; everyone else fills the remaining slots in projected-WAB order
+  const byW = (a, b) => (b.proj_wab ?? -99) - (a.proj_wab ?? -99)
+  let seeded = proj.field.map((d, i) => ({ ...d, line: Math.min(16, Math.floor(i / 4) + 1) }))
+  if (PLAYIN) {
+    const nU = 2 * d3.sum(PLAYIN.auto, d => d[1])
+    const pAtl = proj.atl.slice(-nPlayAtl).sort(byW), pAuto = [...proj.autos].sort(byW).slice(-nU)
+    const pIds = new Set([...pAtl, ...pAuto].map(d => d.id)), games = new Map([...PLAYIN.atl, ...PLAYIN.auto])
+    const deal = (ts, spec) => { let i = 0; return spec.flatMap(([ln, g]) => ts.slice(i, i += 2 * g).map(d => ({ ...d, line: ln, playin: true }))) }
+    const slots = d3.range(1, 17).flatMap(ln => d3.range(4 - (games.get(ln) ?? 0)).map(() => ln))
+    seeded = [...proj.field.filter(d => !pIds.has(d.id)).map((d, i) => ({ ...d, line: slots[i] ?? 16 })), ...deal(pAtl, PLAYIN.atl), ...deal(pAuto, PLAYIN.auto)]
+  }
+  const lines = d3.groups(seeded.sort((a, b) => a.line - b.line || (a.playin ?? false) - (b.playin ?? false) || byW(a, b)), d => d.line)
   const actual = d1.some(d => d.seed != null)
-  return htl.html`<section>${secH("Seed list", htl.html`<span class="note">${actual ? "Committee seed after the name · " : ""}Field ordered by projected WAB, four to a line (the last lines hold the First Four)</span>`)}
-    <div class="seedlines">${lines.map(([k, ts]) => htl.html`<div class="seedline"><span class="n">${k}</span><div class="tms">${ts.map(d => htl.html`<span class="tm">${logo(d.id, 20)}<button type="button" class="tc-n" onclick=${() => goToTeam(d.id)}>${d.team}</button>${proj.autoIds.has(d.id) ? htl.html`<span class="auto">AUTO</span>` : ""}${d.seed ? htl.html`<span class="note">(${d.seed})</span>` : ""}</span>`)}</div></div>`)}</div></section>`
+  const round = snap.field === 76 ? "Opening Round" : "First Four"
+  return htl.html`<section>${secH("Seed list", htl.html`<span class="note">${actual ? "Committee seed after the name · " : ""}Field ordered by projected WAB, four to a line${PLAYIN ? ` · ${round}: the last ${nPlayAtl} at-large teams and the lowest ${2 * d3.sum(PLAYIN.auto, d => d[1])} automatic bids play in` : ""}</span>`)}
+    <div class="seedlines">${lines.map(([k, ts]) => htl.html`<div class="seedline"><span class="n">${k}</span><div class="tms">${ts.map(d => htl.html`<span class="tm">${logo(d.id, 20)}<button type="button" class="tc-n" onclick=${() => goToTeam(d.id)}>${d.team}</button>${proj.autoIds.has(d.id) ? htl.html`<span class="auto">AUTO</span>` : ""}${d.playin ? htl.html`<span class="auto">PLAY-IN</span>` : ""}${d.seed ? htl.html`<span class="note">(${d.seed})</span>` : ""}</span>`)}</div></div>`)}</div></section>`
 }
 bracketOdds = {
   if (!hasOdds) return htl.html`<p class="note">${(snap.n_games ?? 0) > 0 ? "This snapshot has no season simulation." : "No odds before the first games."}</p>`
